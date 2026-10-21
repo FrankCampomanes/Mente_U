@@ -66,6 +66,10 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [screenHistory, setScreenHistory] = useState(['welcome']);
   
+  const [userAlias, setUserAlias] = useState('Anónimo #74');
+  const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
+  const [aliasInput, setAliasInput] = useState('');
+
   // Estado del Chat
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
@@ -79,6 +83,7 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState('Jue 22');
   const [selectedSlot, setSelectedSlot] = useState('11:30 a. m.');
   const [consentGranted, setConsentGranted] = useState(true);
+
 
   // Navegación
   const navigateTo = (screen) => {
@@ -163,7 +168,7 @@ export default function App() {
           </div>
           <div className="header-right">
             <span className="badge-anon">
-              <span>Anónimo #74</span>
+              <span>{userAlias}</span>
             </span>
           </div>
         </header>
@@ -187,17 +192,73 @@ export default function App() {
             </div>
 
             <div className="welcome-actions">
-              <button onClick={() => navigateTo('prompt')} className="btn btn-primary btn-block">
-                <span>Conversar con Frenz</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <button onClick={() => setAuthMode('login')} className="btn btn-primary btn-block">
+                <span>Iniciar sesión</span>
               </button>
-              <button onClick={() => navigateTo('options')} className="btn btn-secondary btn-block">
-                <span>Ver opciones de atención</span>
+              <button onClick={() => setAuthMode('register')} className="btn btn-secondary btn-block">
+                <span>Registrarme</span>
+              </button>
+              <button 
+                onClick={() => {
+                  setUserAlias('Anónimo #74');
+                  navigateTo('prompt');
+                }} 
+                className="btn btn-ghost btn-sm"
+                style={{ marginTop: '4px' }}
+              >
+                <span>Continuar como invitado anónimo</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
             </div>
             <p className="footnote">Para estudiantes universitarios de todo el Perú</p>
+
+            {/* Modal de Autenticación / Registro (Wireframe 01) */}
+            {authMode && (
+              <div className="modal-backdrop">
+                <div className="modal-box">
+                  <div className="modal-header">
+                    <h3>{authMode === 'login' ? 'Iniciar Sesión' : 'Registro de Estudiante'}</h3>
+                    <button onClick={() => setAuthMode(null)} className="icon-btn">&times;</button>
+                  </div>
+                  <p className="modal-sub">
+                    {authMode === 'login' 
+                      ? 'Ingresa con tu alias para acceder a tus citas programadas.' 
+                      : 'Elige un alias anónimo para proteger tu identidad.'}
+                  </p>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (aliasInput.trim()) {
+                      setUserAlias(aliasInput.trim());
+                    }
+                    setAuthMode(null);
+                    navigateTo('prompt');
+                  }}>
+                    <div className="modal-input-group">
+                      <label>Alias universitario:</label>
+                      <input 
+                        type="text" 
+                        placeholder="Ej. Estudiante_Lince, SanMarcos_21, etc." 
+                        value={aliasInput}
+                        onChange={(e) => setAliasInput(e.target.value)}
+                        required
+                      />
+                    </div>
+                    {authMode === 'register' && (
+                      <div className="modal-input-group">
+                        <label>Universidad (Opcional):</label>
+                        <input type="text" placeholder="Ej. UTP, UNMSM, PUCP, UNI..." />
+                      </div>
+                    )}
+                    <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '14px' }}>
+                      <span>{authMode === 'login' ? 'Entrar a MenteU' : 'Crear mi cuenta'}</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
+
 
         {/* PANTALLA 2: Prompts Rápidos */}
         {currentScreen === 'prompt' && (
