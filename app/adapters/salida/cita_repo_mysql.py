@@ -28,15 +28,19 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
     def _get_connection(self):
         if not pymysql:
             raise ConnectionError("PyMySQL no está instalado en el entorno.")
-        return pymysql.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            database=self.database,
-            port=self.port,
-            cursorclass=pymysql.cursors.DictCursor,
-            autocommit=False
-        )
+        connect_kwargs = {
+            'host': self.host,
+            'user': self.user,
+            'password': self.password,
+            'database': self.database,
+            'port': self.port,
+            'cursorclass': pymysql.cursors.DictCursor,
+            'autocommit': False
+        }
+        # Si el host es remoto (como Aiven cloud), habilitar SSL obligatorio
+        if self.host not in ('localhost', '127.0.0.1'):
+            connect_kwargs['ssl'] = {'ssl': {}}
+        return pymysql.connect(**connect_kwargs)
 
     def obtener_disponibilidad(self, disponibilidad_id: str) -> Optional[Dict[str, Any]]:
         try:
