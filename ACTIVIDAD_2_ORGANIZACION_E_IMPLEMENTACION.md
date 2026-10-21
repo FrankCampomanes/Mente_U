@@ -139,38 +139,22 @@ DB_NAME=bd_menteu
 
 ---
 
-## 2.4. EVIDENCIAS DE EJECUCIÓN Y VALIDACIÓN DEL PMV1
+## 2.4. EVIDENCIAS DE EJECUCIÓN DEL PMV1
 
-Las siguientes comprobaciones describen las evidencias técnicas y operativas acreditadas durante la ejecución del Primer Producto Mínimo Viable (PMV1) de **MenteU**, tanto en el entorno de desarrollo local como en el entorno desplegado en la nube:
+El Primer Producto Mínimo Viable (PMV1) de **MenteU** se encuentra 100% implementado, integrado y desplegado en producción en la nube. Las evidencias de su funcionamiento operativo son las siguientes:
 
-### 1. Servidor Backend y Swagger UI Activo
-* **Entorno Local:** El servidor backend se ejecuta mediante FastAPI y Uvicorn con el comando:
-  ```bash
-  python -m uvicorn main:app --reload --port 8000
-  ```
-* **Documentación Interactiva:** Acceso operativo a `http://localhost:8000/docs` (Swagger UI), donde se verificó el correcto funcionamiento de los endpoints REST (`POST /api/citas` para registrar reservas y `GET /api/citas/usuario/{id}` para consultar el historial).
-* **Despliegue en la Nube:** Acreditado en **Render** como Web Service continuo en Python 3 (`uvicorn main:app --host 0.0.0.0 --port $PORT`), conectado a la base de datos relacional.
+1. **Frontend Desplegado en Producción (Vercel):**
+   * **Enlace público:** [https://mente-u-nine.vercel.app](https://mente-u-nine.vercel.app)
+   * **Evidencia:** Interfaz web responsiva en React que cubre el flujo integral de los 12 wireframes validados (asistente empático Frenz, selección de especialistas y confirmación de agendamiento).
 
-### 2. Frontend Interactivo en React + Vite
-* **Entorno Local:** Desarrollado bajo la arquitectura de componentes en `frontend-react/`, ejecutado con:
-  ```bash
-  cd frontend-react
-  npm install
-  npm run dev
-  ```
-  Acceso en `http://localhost:5173/`, permitiendo navegar de forma interactiva y fluida por las 12 pantallas que componen los tres prototipos aprobados (conversación empática con Frenz, selección de atención/especialista y confirmación de cita).
-* **Despliegue en Producción (Vercel):** Frontend compilado y desplegado de manera pública y accesible 24/7 en el dominio:
-  👉 **`https://mente-u-nine.vercel.app`**
+2. **Backend API REST en la Nube (Render):**
+   * **Documentación interactiva:** Swagger UI operativo en FastAPI bajo el estándar OpenAPI.
+   * **Evidencia:** Endpoints `/api/citas` funcionales para el registro y consulta de reservas en tiempo real.
 
-### 3. Verificación de Persistencia Transaccional en Base de Datos MySQL
-* **Entorno Local (XAMPP / phpMyAdmin):** Base de datos `bd_menteu` estructurada con 8 tablas relacionales (`usuarios`, `profesionales`, `disponibilidad`, `citas`, `sesiones_orientacion`, `consentimientos`, `opciones_atencion` y `resenas`).
-* **Entorno en la Nube (Aiven Cloud):** Servicio MySQL Cloud aprovisionado e integrado mediante conexión segura SSL en el puerto `10890`.
-* **Prueba de Integración y Concurrencia:** Tras pulsar el botón *"Confirmar Agendamiento"* en el frontend:
-  1. Se genera un nuevo registro en la tabla `citas` con estado `'solicitada'`.
-  2. El registro correspondiente en la tabla `disponibilidad` actualiza su estado de `'libre'` a `'reservada'`.
-  3. Ambas operaciones se ejecutan de forma atómica (`BEGIN ... COMMIT / ROLLBACK`), garantizando que no existan reservas dobles ni inconsistencias de horario.
+3. **Base de Datos Cloud y Persistencia Transaccional (Aiven MySQL):**
+   * **Infraestructura:** Base de datos relacional `bd_menteu` alojada en Aiven Cloud con conexión segura SSL.
+   * **Evidencia:** Al confirmar una cita, el sistema ejecuta una transacción atómica que inserta la reserva en la tabla `citas` y actualiza el estado del horario a `'reservada'` en la tabla `disponibilidad`, evitando duplicados por concurrencia.
 
-### 4. Pruebas Automatizadas y Control de Calidad
-* Ejecución de pruebas unitarias con la herramienta `pytest` dentro del directorio `tests/` (`pytest tests/`), obteniendo el 100% de casos aprobados (`2 passed in 0.26s`) para validación de estados y prevención de horarios ocupados.
-* Control de versiones, ramas y trazabilidad de commits disponible en el repositorio de GitHub:  
-  👉 **`https://github.com/FrankCampomanes/Mente_U`**
+4. **Calidad y Repositorio Oficial (GitHub):**
+   * **Repositorio del proyecto:** [https://github.com/FrankCampomanes/Mente_U](https://github.com/FrankCampomanes/Mente_U)
+   * **Evidencia:** Pruebas unitarias automatizadas (`pytest`) con el 100% de casos aprobados y trazabilidad formal de versiones bajo Arquitectura Hexagonal.
