@@ -1,0 +1,48 @@
+{
+  "advertencia": "Calculos correspondientes a una nueva base sintetica de demostracion. No son las metricas del archivo original de Semana 09.",
+  "train": 54,
+  "test": 18,
+  "algoritmos": {
+    "Regresión Logística": {
+      "accuracy": 0.9444444444444444,
+      "precision_macro": 0.9523809523809524,
+      "recall_macro": 0.9444444444444445,
+      "f1_macro": 0.9440559440559441
+    },
+    "Random Forest": {
+      "accuracy": 0.7777777777777778,
+      "precision_macro": 0.7833333333333333,
+      "recall_macro": 0.7777777777777777,
+      "f1_macro": 0.7705627705627706
+    },
+    "Árbol de Decisión": {
+      "accuracy": 0.5,
+      "precision_macro": 0.5095238095238095,
+      "recall_macro": 0.5,
+      "f1_macro": 0.5023310023310024
+    }
+  },
+  "mejor_f1_macro": "Regresión Logística",
+  "matriz_confusion": [
+    [
+      6,
+      0,
+      0
+    ],
+    [
+      0,
+      6,
+      0
+    ],
+    [
+      0,
+      1,
+      5
+    ]
+  ],
+  "etiquetas": [
+    "bienestar_universitario",
+    "estres_academico",
+    "situaciones_personales"
+  ]
+}

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MenteU — Tu espacio seguro de escucha y bienestar universitario</title>
+  <meta name="description" content="Plataforma de acompañamiento emocional con IA empática y conexión con especialistas de bienestar universitario en el Perú.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Fondo dinámico con orbes suaves -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-glow bg-glow-3"></div>
+
+  <!-- Contenedor Principal (Simulación Mobile/Responsive Web) -->
+  <main class="app-viewport">
+    
+    <!-- Barra Superior de Navegación -->
+    <header class="app-header">
+      <div class="header-left">
+        <button id="btn-back" class="icon-btn hidden" aria-label="Volver">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="brand">
+          <div class="brand-symbol">
+            <span class="brand-dot"></span>
+          </div>
+          <span class="brand-title">Mente<span class="brand-accent">U</span></span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="badge-anon" id="user-badge" title="Sesión confidencial">
+          <span class="pulse-indicator"></span>
+          <span id="user-alias-label">Anónimo #74</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- PANTALLA 1: Bienvenida -->
+    <section id="screen-welcome" class="screen active">
+      <div class="welcome-hero">
+        <div class="hero-illustration">
+          <div class="sparkle-orbit">
+            <div class="sparkle s1">✦</div>
+            <div class="sparkle s2">✧</div>
+            <div class="sparkle s3">✦</div>
+          </div>
+          <div class="hero-logo-box">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="url(#hero-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <defs>
+                <linearGradient id="hero-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="100%" stop-color="#818cf8"/>
+                </linearGradient>
+              </defs>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <path d="M8 10h.01M12 10h.01M16 10h.01"/>
+            </svg>
+          </div>
+        </div>
+        <h1 class="hero-title">Mente<span class="gradient-text">U</span></h1>
+        <p class="hero-subtitle">Tu espacio para hablar libremente cuando lo necesites, sin juicios ni etiquetas.</p>
+        
+        <div class="privacy-guarantee">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>100% Anónimo &bull; No guardamos tus mensajes</span>
+        </div>
+      </div>
+
+      <div class="welcome-actions">
+        <button id="btn-start-chat" class="btn btn-primary btn-block">
+          <span>Comenzar a hablar</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button id="btn-direct-booking" class="btn btn-secondary btn-block">
+          <span>Ver psicólogos y bienestar</span>
+        </button>
+      </div>
+      <p class="footnote">Para universitarios de todo el Perú &bull; Apoyo ético y formativo</p>
+    </section>
+
+    <!-- PANTALLA 2: Inicio de Orientación y Opciones Rápidas -->
+    <section id="screen-prompt" class="screen">
+      <div class="prompt-header">
+        <div class="avatar-ai">
+          <span>🌱</span>
+        </div>
+        <h2>¡Hola! ¿Cómo estás hoy?</h2>
+        <p>Elige cómo te gustaría empezar o simplemente escribe lo que sientas:</p>
+      </div>
+
+      <div class="chips-grid">
+        <button class="chip-card" data-prompt="Quiero contar cómo me siento hoy, tengo varias cosas acumuladas.">
+          <span class="chip-icon">💭</span>
+          <div class="chip-text">
+            <strong>Quiero desahogarme</strong>
+            <small>Expresar lo que siento</small>
+          </div>
+        </button>
+        <button class="chip-card" data-prompt="Tuve un día difícil en la universidad con las clases y exámenes.">
+          <span class="chip-icon">🌧️</span>
+          <div class="chip-text">
+            <strong>Tuve un día difícil</strong>
+            <small>Cansancio o frustración</small>
+          </div>
+        </button>
+        <button class="chip-card" data-prompt="Me preocupa algo sobre mi rendimiento y entregas académicas.">
+          <span class="chip-icon">⏳</span>
+          <div class="chip-text">
+            <strong>Me preocupa algo</strong>
+            <small>Ansiedad por el futuro</small>
+          </div>
+        </button>
+        <button class="chip-card" data-prompt="Solo quiero conversar un momento para despejar mi mente.">
+          <span class="chip-icon">☕</span>
+          <div class="chip-text">
+            <strong>Solo quiero conversar</strong>
+            <small>Pausar y respirar</small>
+          </div>
+        </button>
+      </div>
+
+      <div class="input-inline-box">
+        <input type="text" id="initial-input" placeholder="O escribe libremente cómo te sientes..." autocomplete="off">
+        <button id="btn-initial-send" class="btn-send" aria-label="Enviar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+      <span class="micro-disclaimer">Orientación inicial reflexiva &bull; No sustituye evaluación clínica</span>
+    </section>
+
+    <!-- PANTALLA 3: Chat Interactivo con IA -->
+    <section id="screen-chat" class="screen">
+      <div class="chat-status-bar">
+        <div class="ai-identity">
+          <div class="ai-avatar-mini">M</div>
+          <div>
+            <strong>Compañero MenteU</strong>
+            <span class="ai-status">Escuchando activamente...</span>
+          </div>
+        </div>
+        <button id="btn-finish-chat" class="btn btn-sm btn-ghost">
+          <span>Finalizar</span>
+        </button>
+      </div>
+
+      <div id="chat-messages" class="chat-flow">
+        <!-- Los mensajes se inyectan dinámicamente -->
+      </div>
+
+      <div class="chat-input-area">
+        <form id="chat-form" class="chat-input-wrapper">
+          <input type="text" id="chat-input" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+          <button type="submit" id="btn-chat-send" class="btn-send" aria-label="Enviar mensaje">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: Resumen Orientativo y Consentimiento -->
+    <section id="screen-summary" class="screen">
+      <div class="summary-card">
+        <div class="summary-badge">🌿 Cierre Orientativo</div>
+        <h2 class="summary-title">"Gracias por compartir conmigo. No estás solo."</h2>
+        <p class="summary-intro">De nuestra conversación, los temas clave que identificamos juntos son:</p>
+
+        <ul class="summary-points" id="summary-points-list">
+          <li><strong>Sobrecarga académica:</strong> Sensación de acumulación de tareas y evaluaciones próximas.</li>
+          <li><strong>Tensión emocional:</strong> Dificultad para desconectarse de las obligaciones universitarias.</li>
+          <li><strong>Búsqueda proactiva:</strong> Interés positivo en ordenar prioridades y pedir orientación.</li>
+        </ul>
+
+        <div class="tips-box">
+          <span class="tips-label">💡 Pequeños pasos para hoy (sin presión):</span>
+          <ol class="tips-list">
+            <li>Tómate una pausa de 15 minutos sin pantallas.</li>
+            <li>Elige solo UNA tarea prioritaria para avanzar hoy.</li>
+            <li>Bebe un vaso de agua y reconoce tu esfuerzo.</li>
+          </ol>
+        </div>
+
+        <div class="disclaimer-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <small>Este resumen es orientativo y no constituye diagnóstico médico ni psicológico.</small>
+        </div>
+
+        <div class="consent-check">
+          <label class="custom-checkbox">
+            <input type="checkbox" id="check-consent" checked>
+            <span class="checkmark"></span>
+            <span class="label-text">Autorizo ver las opciones de apoyo y compartir este resumen únicamente si decido agendar una cita.</span>
+          </label>
+        </div>
+
+        <button id="btn-view-options" class="btn btn-primary btn-block">
+          <span>Ver opciones de apoyo</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 5: Opciones de Atención con Filtros -->
+    <section id="screen-options" class="screen">
+      <div class="options-header">
+        <h2>Opciones que podrían ayudarte</h2>
+        <p>Elige entre el servicio gratuito de tu universidad o psicólogos particulares a tarifa solidaria.</p>
+      </div>
+
+      <!-- Filtros interactivos -->
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label>Costo:</label>
+          <div class="pill-selector" id="filter-cost">
+            <button class="pill active" data-cost="all">Todos</button>
+            <button class="pill" data-cost="gratis">Gratis</button>
+            <button class="pill" data-cost="pago">De pago</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>Modalidad:</label>
+          <div class="pill-selector" id="filter-modality">
+            <button class="pill active" data-mod="all">Todas</button>
+            <button class="pill" data-mod="virtual">Virtual</button>
+            <button class="pill" data-mod="presencial">Presencial</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Profesionales y Opciones -->
+      <div class="professionals-list" id="prof-list">
+        <!-- Renderizado dinámico desde app.js -->
+      </div>
+    </section>
+
+    <!-- PANTALLA 6/7: Detalle del Profesional -->
+    <section id="screen-detail" class="screen">
+      <div class="detail-card" id="detail-card-content">
+        <!-- Se llena dinámicamente con los datos del profesional seleccionado -->
+      </div>
+      <div class="detail-actions">
+        <button id="btn-go-schedule" class="btn btn-primary btn-block">
+          <span>Solicitar y elegir horario</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 8: Selección de Horario (45-50 min) -->
+    <section id="screen-schedule" class="screen">
+      <div class="schedule-header">
+        <h2>Selecciona fecha y hora</h2>
+        <p>Sesiones de 45 a 50 minutos diseñadas para acompañarte a tu ritmo.</p>
+      </div>
+
+      <div class="prof-summary-badge" id="schedule-prof-badge">
+        <!-- Info rápida del profesional -->
+      </div>
+
+      <!-- Selector de Días -->
+      <div class="days-carousel" id="days-selector">
+        <button class="day-card active" data-day="Jue 22">
+          <span class="day-name">Jue</span>
+          <span class="day-num">22</span>
+          <span class="day-status">Hoy</span>
+        </button>
+        <button class="day-card" data-day="Vie 23">
+          <span class="day-name">Vie</span>
+          <span class="day-num">23</span>
+          <span class="day-status">Disponible</span>
+        </button>
+        <button class="day-card" data-day="Sáb 24">
+          <span class="day-name">Sáb</span>
+          <span class="day-num">24</span>
+          <span class="day-status">Disponible</span>
+        </button>
+        <button class="day-card" data-day="Lun 26">
+          <span class="day-name">Lun</span>
+          <span class="day-num">26</span>
+          <span class="day-status">Disponible</span>
+        </button>
+      </div>
+
+      <!-- Selector de Horarios -->
+      <div class="time-slots-container">
+        <h3>Horarios disponibles (45 min):</h3>
+        <div class="slots-grid" id="slots-grid">
+          <button class="slot-btn" data-slot="10:00 a. m. - 10:45 a. m.">10:00 a. m.</button>
+          <button class="slot-btn active" data-slot="11:30 a. m. - 12:15 p. m.">11:30 a. m.</button>
+          <button class="slot-btn" data-slot="03:00 p. m. - 03:45 p. m.">03:00 p. m.</button>
+          <button class="slot-btn" data-slot="04:30 p. m. - 05:15 p. m.">04:30 p. m.</button>
+        </div>
+      </div>
+
+      <div class="selection-preview-box">
+        <span class="preview-label">Has seleccionado:</span>
+        <strong id="selected-slot-label">Jueves 22, 11:30 a. m. (Virtual)</strong>
+      </div>
+
+      <button id="btn-confirm-booking" class="btn btn-primary btn-block">
+        <span>Confirmar Agendamiento</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </section>
+
+    <!-- PANTALLA 12: Confirmación Exitosa de la Cita -->
+    <section id="screen-success" class="screen">
+      <div class="success-card">
+        <div class="success-icon-wrapper">
+          <svg class="checkmark-svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h2>¡Cita Registrada con Éxito!</h2>
+        <p class="success-subtitle">Tu solicitud ha sido guardada en la base de datos de MenteU.</p>
+
+        <div class="ticket-card" id="booking-ticket">
+          <div class="ticket-row">
+            <span class="ticket-label">Profesional:</span>
+            <strong id="ticket-prof">Psic. Ana Torres</strong>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Fecha y Hora:</span>
+            <strong id="ticket-datetime">Jueves 22, 11:30 a. m.</strong>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Modalidad:</span>
+            <span class="badge-virtual" id="ticket-modality">Virtual (Enlace privado)</span>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Costo:</span>
+            <strong id="ticket-cost" class="cost-tag">S/ 15.00</strong>
+          </div>
+          <div class="ticket-row">
+            <span class="ticket-label">Estado:</span>
+            <span class="status-pill status-solicitada">CONFIRMADA (PMV1)</span>
+          </div>
+        </div>
+
+        <!-- Sección de Reseñas Protegida por Regla de Negocio -->
+        <div class="review-lock-box">
+          <div class="stars-row disabled">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+          <small class="lock-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            La opción de calificar y reseñar se habilitará automáticamente una vez completada tu sesión.
+          </small>
+        </div>
+
+        <button id="btn-restart" class="btn btn-secondary btn-block">
+          <span>Volver al inicio</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
