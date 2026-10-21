@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import { analyzeAndRespond, buildDynamicSummary } from './frenzEngine';
 
 const PROFESIONALES = [
   {
@@ -74,7 +75,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [chatCount, setChatCount] = useState(0);
+  const [detectedTopics, setDetectedTopics] = useState([]);
 
   // Estado del Filtro y Selección
   const [filterCost, setFilterCost] = useState('all');
@@ -83,7 +84,6 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState('Jue 22');
   const [selectedSlot, setSelectedSlot] = useState('11:30 a. m.');
   const [consentGranted, setConsentGranted] = useState(true);
-
 
   // Navegación
   const navigateTo = (screen) => {
@@ -100,10 +100,11 @@ export default function App() {
     }
   };
 
-  // Chat con Frenz
+  // Chat con Frenz (Respuestas Inteligentes y Variadas)
   const handleStartConversation = (promptText) => {
     setMessages([{ sender: 'user', text: promptText }]);
-    setChatCount(0);
+    const analysis = analyzeAndRespond(promptText, []);
+    setDetectedTopics(analysis.detectedTopicIds);
     navigateTo('chat');
     setIsTyping(true);
 
@@ -113,10 +114,10 @@ export default function App() {
         ...prev,
         {
           sender: 'ai',
-          text: 'Hola, qué bueno que te des este ratito para ti. A veces con la universidad se junta todo y guardárselo solo cansa más. Cuéntame tranquilo, ¿qué es lo que más te anda dando vueltas hoy?'
+          text: analysis.reply
         }
       ]);
-    }, 800);
+    }, 700);
   };
 
   const handleSendChatMessage = (e) => {
@@ -124,19 +125,21 @@ export default function App() {
     if (!chatInput.trim()) return;
 
     const userText = chatInput.trim();
-    setMessages((prev) => [...prev, { sender: 'user', text: userText }]);
+    const currentMessages = [...messages, { sender: 'user', text: userText }];
+    setMessages(currentMessages);
     setChatInput('');
     setIsTyping(true);
-    setChatCount((prev) => prev + 1);
+
+    // Analizar mensaje con el motor empático
+    const analysis = analyzeAndRespond(userText, currentMessages);
+    setDetectedTopics((prev) => [...prev, ...analysis.detectedTopicIds]);
 
     setTimeout(() => {
       setIsTyping(false);
-      const reply = chatCount === 0
-        ? 'Te entiendo totalmente. La u puede volverse bien pesada y no siempre se puede con todo a la vez. ¿Esto viene de hace días o es por alguna entrega o parcial en específico?'
-        : 'Suena pesado lidiar con eso, pero es valioso que lo estés reconociendo en vez de ignorarlo. Cuando gustes podemos ver un resumen rápido de lo que conversamos y ver personas con quienes puedas hablar con más calma.';
-      setMessages((prev) => [...prev, { sender: 'ai', text: reply }]);
-    }, 900);
+      setMessages((prev) => [...prev, { sender: 'ai', text: analysis.reply }]);
+    }, 850);
   };
+
 
   const filteredProfessionals = PROFESIONALES.filter((p) => {
     if (filterCost === 'gratis' && p.tipo !== 'gratis') return false;
@@ -379,55 +382,59 @@ export default function App() {
         )}
 
         {/* PANTALLA 4: Resumen Orientativo */}
-        {currentScreen === 'summary' && (
-          <div className="screen-container">
-            <div className="summary-card">
-              <span className="summary-badge">Puntos clave</span>
-              <h2 className="summary-title">Gracias por compartir esto con Frenz</h2>
-              <p className="summary-intro">De lo que charlamos, esto es lo principal que identificamos:</p>
+        {currentScreen === 'summary' && (() => {
+          const summaryData = buildDynamicSummary(detectedTopics);
+          return (
+            <div className="screen-container">
+              <div className="summary-card">
+                <span className="summary-badge">Puntos clave</span>
+                <h2 className="summary-title">Gracias por compartir esto con Frenz</h2>
+                <p className="summary-intro">De lo que charlamos, esto es lo principal que identificamos:</p>
 
-              <ul className="summary-points">
-                <li><strong>Carga universitaria:</strong> Varias tareas y pendientes acumulados que te están pesando.</li>
-                <li><strong>Cansancio acumulado:</strong> Dificultad para desconectarte del estudio y descansar de verdad.</li>
-                <li><strong>Disposición al cambio:</strong> Reconocerlo y buscar expresarlo ya es un paso positivo.</li>
-              </ul>
+                <ul className="summary-points">
+                  {summaryData.points.map((p, idx) => (
+                    <li key={idx}>{p}</li>
+                  ))}
+                </ul>
 
-              <div className="tips-box">
-                <span className="tips-label">Pasos suaves para hoy:</span>
-                <ol className="tips-list">
-                  <li>Toma una pausa de 15 minutos sin revisar la u.</li>
-                  <li>Elige avanzar solo UNA cosa pequeña hoy.</li>
-                  <li>Toma un vaso de agua y no te culpes.</li>
-                </ol>
+                <div className="tips-box">
+                  <span className="tips-label">Pasos suaves para hoy:</span>
+                  <ol className="tips-list">
+                    {summaryData.tips.map((t, idx) => (
+                      <li key={idx}>{t}</li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div className="consent-check">
+                  <label className="custom-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={consentGranted}
+                      onChange={(e) => setConsentGranted(e.target.checked)}
+                    />
+                    <span className="label-text">Autorizo ver las opciones de apoyo y compartir este resumen únicamente si elijo agendar una cita.</span>
+                  </label>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!consentGranted) {
+                      alert('Por favor autoriza la opción de ver apoyos para continuar.');
+                      return;
+                    }
+                    navigateTo('options');
+                  }}
+                  className="btn btn-primary btn-block"
+                >
+                  <span>Ver opciones de atención</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
               </div>
-
-              <div className="consent-check">
-                <label className="custom-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={consentGranted}
-                    onChange={(e) => setConsentGranted(e.target.checked)}
-                  />
-                  <span className="label-text">Autorizo ver las opciones de apoyo y compartir este resumen únicamente si elijo agendar una cita.</span>
-                </label>
-              </div>
-
-              <button
-                onClick={() => {
-                  if (!consentGranted) {
-                    alert('Por favor autoriza la opción de ver apoyos para continuar.');
-                    return;
-                  }
-                  navigateTo('options');
-                }}
-                className="btn btn-primary btn-block"
-              >
-                <span>Ver opciones de atención</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
+
 
         {/* PANTALLA 5: Opciones y Filtros */}
         {currentScreen === 'options' && (
