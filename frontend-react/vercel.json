@@ -1,6 +1,4 @@
 {
-  "buildCommand": "cd frontend-react && npm run build",
-  "outputDirectory": "frontend-react/dist",
   "framework": "vite",
   "rewrites": [
     {
