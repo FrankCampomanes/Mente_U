@@ -109,4 +109,11 @@ INSERT INTO disponibilidad (id, profesional_id, inicio, fin, estado) VALUES
 ('disp-04', 'prof-02', '2026-10-22 16:30:00', '2026-10-22 17:15:00', 'libre');
 
 INSERT INTO usuarios (id, alias) VALUES
-('usr-demo-01', 'EstudianteAnonimo_74');
+('usr-demo-01', 'EstudianteAnonimo_74'),
+('usr-demo-02', 'Lince_Academico'),
+('usr-demo-03', 'SanMarcos_Psicologia');
+
+INSERT INTO sesiones_orientacion (id, usuario_id, estado, resumen_orientativo, guardado_autorizado) VALUES
+('ses-01', 'usr-demo-01', 'cerrada', 'Tensión académica: Preocupación por parciales de cálculo. Se recomiendan pausas activas y derivación a Bienestar Universitario.', 1),
+('ses-02', 'usr-demo-02', 'cerrada', 'Agotamiento físico e insomnio: Dificultad para desconectar antes de dormir. Se sugiere higiene del sueño y sesión psicológica.', 1);
+
