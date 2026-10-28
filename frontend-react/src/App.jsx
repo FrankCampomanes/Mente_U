@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import { analyzeAndRespond, buildDynamicSummary } from './frenzEngine';
 
-// Lista de los 4 profesionales exactamente como en el mockup del profesor
+// Lista de los 4 profesionales con perfiles reales sincronizados con la BD
 const PROFESIONALES = [
   {
     id: 'prof-01',
@@ -76,16 +76,18 @@ const PROFESIONALES = [
 ];
 
 export default function App() {
-  // Pantallas: welcome (1) | prompt (2) | chat (3) | summary (4) | options (5) | profile (6) | datetime (7) | success (8)
+  // Navegación de pantallas:
+  // welcome (1) | prompt (2) | chat (3) | summary (4) | options (5) | profile (6)
+  // datetime (7) | prochat (8) | propose_time (9) | confirm_detail (10) | confirmed (11) | review (12)
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [screenHistory, setScreenHistory] = useState(['welcome']);
   
-  // Usuario
+  // Usuario y login
   const [userAlias, setUserAlias] = useState('Estudiante');
   const [authMode, setAuthMode] = useState(null);
   const [aliasInput, setAliasInput] = useState('');
 
-  // Conversación (con el diálogo del mockup)
+  // Mensajes de la conversación con IA (Frenz)
   const [messages, setMessages] = useState([
     { sender: 'user', text: 'Hoy siento que no puedo con todo.' },
     { sender: 'ai', text: 'Parece que estás teniendo bastante encima. ¿Qué es lo que más te está preocupando ahora?' },
@@ -98,14 +100,26 @@ export default function App() {
   const [detectedTopics, setDetectedTopics] = useState(['examenes', 'cansancio_sueno']);
 
   // Filtros de la Pantalla 5
-  const [activeFilter, setActiveFilter] = useState('todos'); // 'todos' | 'gratis' | 'precio' | 'modalidad' | 'calificacion'
+  const [activeFilter, setActiveFilter] = useState('todos');
 
-  // Selección de profesional y horario (Pantallas 6 y 7)
-  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[1]); // Psic. Ana Torres por defecto como en el mockup
+  // Selección de profesional y horario
+  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[1]); // Psic. Ana Torres
   const [selectedDay, setSelectedDay] = useState('Martes 15');
   const [selectedTime, setSelectedTime] = useState('11:30 a. m.');
-  const [reservaConfirmada, setReservaConfirmada] = useState(null);
+  const [selectedModality, setSelectedModality] = useState('Virtual');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Mensajes en el Chat con el profesional (Mockup 4)
+  const [proMessages, setProMessages] = useState([
+    { sender: 'user', text: 'Hola, quisiera consultar por una cita.' },
+    { sender: 'pro', text: 'Claro. Tengo disponibilidad esta semana. ¿Prefieres atención virtual o presencial?' }
+  ]);
+  const [proInput, setProInput] = useState('');
+
+  // Reseña y evaluación (Mockup 1)
+  const [reviewStars, setReviewStars] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSent, setReviewSent] = useState(false);
 
   // Navegación
   const navigateTo = (screen) => {
@@ -129,7 +143,7 @@ export default function App() {
     setCurrentScreen('welcome');
   };
 
-  // Chat
+  // Inicio de chat desde Prompt
   const handleStartFromPrompt = (text) => {
     if (!text.trim()) return;
     const initialUserMsg = { sender: 'user', text: text.trim() };
@@ -142,6 +156,7 @@ export default function App() {
     navigateTo('chat');
   };
 
+  // Enviar mensaje en el chat con IA
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -160,6 +175,25 @@ export default function App() {
     }, 600);
   };
 
+  // Enviar mensaje en el chat con Profesional
+  const handleSendProMessage = (e) => {
+    e.preventDefault();
+    if (!proInput.trim()) return;
+    const userText = proInput.trim();
+    setProMessages((prev) => [...prev, { sender: 'user', text: userText }]);
+    setProInput('');
+
+    setTimeout(() => {
+      setProMessages((prev) => [
+        ...prev,
+        {
+          sender: 'pro',
+          text: 'Perfecto, te he enviado una propuesta de horario para coordinar nuestra sesión.'
+        }
+      ]);
+    }, 700);
+  };
+
   // Filtrado de profesionales
   const filteredProfessionals = PROFESIONALES.filter((p) => {
     if (activeFilter === 'gratis') return p.esGratis;
@@ -168,37 +202,26 @@ export default function App() {
     return true;
   });
 
-  // Confirmar agendamiento en base de datos
-  const handleConfirmBooking = async () => {
+  // Confirmar y pagar cita (Persistencia en base de datos)
+  const handleExecutePayment = async () => {
     setIsSubmitting(true);
     const apiUrl = import.meta.env.VITE_API_URL || 'https://mente-u-backend.onrender.com';
-    const nuevaCita = {
-      id: 'CITA-' + Math.floor(1000 + Math.random() * 9000),
-      prof: selectedProf.nombre,
-      fecha: `${selectedDay} a las ${selectedTime}`,
-      costo: selectedProf.costoTexto,
-      modalidad: selectedProf.modalidad
-    };
-
     try {
-      // Intentar persistir en el backend en vivo (Render + Aiven MySQL)
       await fetch(`${apiUrl}/api/citas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           usuario_id: 'usr-demo-01',
           disponibilidad_id: 'disp-01',
-          modalidad: 'virtual',
+          modalidad: selectedModality.toLowerCase(),
           costo: selectedProf.precioValor
         })
       });
     } catch (err) {
       console.log('Persistencia offline activa:', err);
     }
-
-    setReservaConfirmada(nuevaCita);
     setIsSubmitting(false);
-    navigateTo('success');
+    navigateTo('confirmed');
   };
 
   const summaryData = buildDynamicSummary(detectedTopics);
@@ -244,7 +267,7 @@ export default function App() {
         <div className="phone-screen-content">
 
           {/* ======================================================== */}
-          {/* PANTALLA 1: BIENVENIDA (Mockup 3 del profesor)           */}
+          {/* PANTALLA 1: BIENVENIDA (Mockup 3 del set 1)              */}
           {/* ======================================================== */}
           {currentScreen === 'welcome' && (
             <div className="screen-view view-welcome">
@@ -308,7 +331,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 2: PROMPT INICIAL (Mockup 4 del profesor)        */}
+          {/* PANTALLA 2: PROMPT INICIAL (Mockup 4 del set 1)           */}
           {/* ======================================================== */}
           {currentScreen === 'prompt' && (
             <div className="screen-view view-prompt">
@@ -358,7 +381,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 3: CONVERSACIÓN CON IA (Mockup 2 del profesor)    */}
+          {/* PANTALLA 3: CONVERSACIÓN CON IA (Mockup 2 del set 1)       */}
           {/* ======================================================== */}
           {currentScreen === 'chat' && (
             <div className="screen-view view-chat">
@@ -409,7 +432,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 4: RESUMEN DE CONVERSACIÓN (Mockup 1 del profesor)*/}
+          {/* PANTALLA 4: RESUMEN DE CONVERSACIÓN (Mockup 1 del set 1)  */}
           {/* ======================================================== */}
           {currentScreen === 'summary' && (
             <div className="screen-view view-summary">
@@ -460,7 +483,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 5: OPCIONES DE APOYO (Mockup 2 del nuevo set)     */}
+          {/* PANTALLA 5: OPCIONES DE APOYO (Mockup 2 del set 2)        */}
           {/* ======================================================== */}
           {currentScreen === 'options' && (
             <div className="screen-view view-options">
@@ -469,7 +492,6 @@ export default function App() {
                 Según lo que conversamos, puedes elegir la opción de atención que prefieras.
               </p>
 
-              {/* Botones de filtro del mockup */}
               <div className="filter-pills-grid">
                 <button 
                   onClick={() => setActiveFilter(activeFilter === 'gratis' ? 'todos' : 'gratis')} 
@@ -503,7 +525,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Lista de 4 tarjetas de profesionales del mockup */}
               <div className="prof-cards-vertical-list">
                 {filteredProfessionals.map((prof) => (
                   <div key={prof.id} className="prof-card-row">
@@ -529,7 +550,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 6: PERFIL DEL PROFESIONAL (Mockups 3 y 4 del set)*/}
+          {/* PANTALLA 6: PERFIL DEL PROFESIONAL (Mockups 3 y 4 del set 2)*/}
           {/* ======================================================== */}
           {currentScreen === 'profile' && selectedProf && (
             <div className="screen-view view-profile">
@@ -537,7 +558,6 @@ export default function App() {
                 {selectedProf.nombre}
               </h2>
 
-              {/* Bloque superior con foto y subtítulo / estrellas */}
               <div className="profile-header-card">
                 <img src={selectedProf.fotoUrl} alt={selectedProf.nombre} className="profile-large-img" />
                 <div className="profile-header-info">
@@ -552,14 +572,12 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Datos de especialidad y tarifa */}
               <div className="profile-specs-block">
                 <p><strong>Especialidades:</strong> {selectedProf.especialidades}</p>
                 <p><strong>Modalidad:</strong> {selectedProf.modalidad}</p>
                 <p><strong>{selectedProf.costoTexto}</strong></p>
               </div>
 
-              {/* Caja celeste de contexto de conversación */}
               <div className="summary-ice-card profile-context-box">
                 <strong className="context-box-title">Contexto de la conversación</strong>
                 <p className="context-box-desc">
@@ -567,7 +585,6 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Caja blanca de reseñas de estudiantes */}
               <div className="profile-reviews-box">
                 <strong className="reviews-box-title">Reseñas de estudiantes</strong>
                 {selectedProf.resenas.map((r, i) => (
@@ -578,20 +595,26 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Botón inferior Solicitar cita */}
-              <div className="profile-bottom-cta">
+              <div className="profile-bottom-cta" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button 
                   onClick={() => navigateTo('datetime')} 
                   className="btn-teal-primary"
                 >
                   Solicitar cita
                 </button>
+                <button 
+                  onClick={() => navigateTo('prochat')} 
+                  className="btn-ice-secondary"
+                  style={{ fontSize: '13.5px', padding: '10px' }}
+                >
+                  Coordinar por chat previo
+                </button>
               </div>
             </div>
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 7: FECHA Y HORA (Mockup 1 del nuevo set)          */}
+          {/* PANTALLA 7: FECHA Y HORA (Mockup 1 del set 2)              */}
           {/* ======================================================== */}
           {currentScreen === 'datetime' && (
             <div className="screen-view view-datetime">
@@ -599,7 +622,6 @@ export default function App() {
                 Selecciona fecha y hora<br />para tu cita
               </h2>
 
-              {/* Fila de días exactamente como en el mockup */}
               <div className="days-pills-row">
                 {['Lunes 14', 'Martes 15', 'Miércoles 16'].map((d) => (
                   <button 
@@ -612,7 +634,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Bloques de horario verticales idénticos al mockup */}
               <div className="time-slots-vertical-list">
                 {['10:00 a. m.', '11:30 a. m.', '2:00 p. m.', '3:30 p. m.'].map((t) => (
                   <button 
@@ -625,47 +646,223 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Caja informativa celeste de selección */}
               <div className="summary-ice-card datetime-selected-summary">
                 <span className="selected-lead-tag">Has seleccionado:</span>
                 <strong className="selected-lead-val">{selectedDay} a las {selectedTime}.</strong>
               </div>
 
-              {/* Botón inferior Confirmar agendamiento */}
               <div className="datetime-bottom-cta">
                 <button 
-                  onClick={handleConfirmBooking} 
-                  disabled={isSubmitting}
+                  onClick={() => navigateTo('confirm_detail')} 
                   className="btn-teal-primary"
                 >
-                  {isSubmitting ? 'Guardando en Base de Datos...' : 'Confirmar agendamiento'}
+                  Confirmar agendamiento
                 </button>
               </div>
             </div>
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 8: CONFIRMACIÓN Y COMPROBANTE DE CITA             */}
+          {/* PANTALLA 8: CHAT CON PROFESIONAL (Mockup 4 del nuevo set) */}
           {/* ======================================================== */}
-          {currentScreen === 'success' && reservaConfirmada && (
-            <div className="screen-view view-success">
-              <div className="success-check-circle">✓</div>
-              <h2 className="success-main-heading">¡Cita Registrada!</h2>
-              <p className="prompt-sub-heading" style={{ textAlign: 'center', marginBottom: '18px' }}>
-                Tu solicitud ha sido guardada en la base de datos de MenteU.
-              </p>
-
-              <div className="summary-ice-card success-ticket-card">
-                <p><strong>Código de Cita:</strong> {reservaConfirmada.id}</p>
-                <p><strong>Especialista:</strong> {reservaConfirmada.prof}</p>
-                <p><strong>Fecha y hora:</strong> {reservaConfirmada.fecha}</p>
-                <p><strong>Tarifa acordada:</strong> {reservaConfirmada.costo}</p>
-                <p><strong>Modalidad:</strong> {reservaConfirmada.modalidad}</p>
+          {currentScreen === 'prochat' && (
+            <div className="screen-view view-prochat">
+              <div className="chat-title-row">
+                <h2 className="chat-main-heading">Chat con profesional</h2>
               </div>
 
-              <div className="success-actions-bottom">
-                <button onClick={handleGoHome} className="btn-teal-primary">
-                  Volver al Inicio
+              <div className="chat-messages-container">
+                {proMessages.map((msg, index) => (
+                  <div 
+                    key={index} 
+                    className={msg.sender === 'user' ? 'bubble-user-full' : 'bubble-ai-white'}
+                  >
+                    <p>{msg.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="chat-bottom-dock">
+                <form onSubmit={handleSendProMessage} className="input-bar-mockup">
+                  <input 
+                    type="text" 
+                    placeholder="Escribe..."
+                    value={proInput}
+                    onChange={(e) => setProInput(e.target.value)}
+                    className="input-field-clean"
+                  />
+                  <button type="submit" className="btn-teal-pill-send" aria-label="Enviar">
+                    Enviar
+                  </button>
+                </form>
+
+                <button 
+                  onClick={() => navigateTo('propose_time')} 
+                  className="btn-teal-primary"
+                  style={{ marginTop: '6px' }}
+                >
+                  Ver propuesta de horario
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* PANTALLA 9: PROPUESTA DE HORARIO (Mockup 3 del nuevo set)  */}
+          {/* ======================================================== */}
+          {currentScreen === 'propose_time' && (
+            <div className="screen-view view-propose-time">
+              <div className="chat-title-row" style={{ marginBottom: '22px' }}>
+                <h2 className="chat-main-heading">Propuesta de horario</h2>
+              </div>
+
+              <div className="summary-ice-card propose-time-card">
+                <p className="propose-lead-text">El profesional te propone:</p>
+                <h3 className="propose-time-highlight">Martes 30 | 4:00 p. m. | Virtual</h3>
+              </div>
+
+              <div className="propose-actions-bottom">
+                <button 
+                  onClick={() => {
+                    setSelectedDay('Martes 30');
+                    setSelectedTime('4:00 p. m.');
+                    setSelectedModality('Virtual');
+                    navigateTo('confirm_detail');
+                  }} 
+                  className="btn-teal-primary"
+                >
+                  Aceptar
+                </button>
+                <button 
+                  onClick={() => navigateTo('prochat')} 
+                  className="btn-ice-secondary"
+                >
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* PANTALLA 10: CONFIRMACIÓN Y DETALLE (Mockup 2 del nuevo set)*/}
+          {/* ======================================================== */}
+          {currentScreen === 'confirm_detail' && (
+            <div className="screen-view view-confirm-detail">
+              <div className="chat-title-row" style={{ marginBottom: '20px' }}>
+                <h2 className="chat-main-heading">Confirmación y detalle</h2>
+              </div>
+
+              <div className="summary-ice-card detail-summary-card">
+                <strong className="detail-summary-title">Resumen de la cita</strong>
+                <div className="detail-lines-list">
+                  <p><strong>Profesional:</strong> {selectedProf.nombre}</p>
+                  <p><strong>Fecha:</strong> {selectedDay}</p>
+                  <p><strong>Hora:</strong> {selectedTime}</p>
+                  <p><strong>Modalidad:</strong> {selectedModality}</p>
+                  <p><strong>Costo:</strong> {selectedProf.costoTexto}</p>
+                </div>
+              </div>
+
+              <div className="confirm-detail-bottom-cta">
+                <button 
+                  onClick={handleExecutePayment} 
+                  disabled={isSubmitting}
+                  className="btn-teal-primary"
+                >
+                  {isSubmitting ? 'Procesando confirmación...' : 'Realizar pago y confirmar'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* PANTALLA 11: CITA CONFIRMADA (Mockup 1 del nuevo set)      */}
+          {/* ======================================================== */}
+          {currentScreen === 'confirmed' && (
+            <div className="screen-view view-confirmed">
+              <div className="confirmed-header-row">
+                <span className="confirmed-check-icon">✓</span>
+                <h2 className="chat-main-heading">Cita confirmada</h2>
+              </div>
+
+              <div className="confirmed-mint-card">
+                <div className="detail-lines-list">
+                  <p><strong>Profesional:</strong> {selectedProf.nombre}</p>
+                  <p><strong>Fecha:</strong> {selectedDay}</p>
+                  <p><strong>Hora:</strong> {selectedTime}</p>
+                  <p><strong>Modalidad:</strong> {selectedModality}</p>
+                  <p><strong>Costo:</strong> {selectedProf.costoTexto}</p>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => alert(`Código de cita: CITA-${Math.floor(1000 + Math.random() * 9000)}\nEspecialista: ${selectedProf.nombre}\nHorario: ${selectedDay} a las ${selectedTime}`)} 
+                className="btn-teal-primary"
+                style={{ marginBottom: '24px' }}
+              >
+                Ver cita
+              </button>
+
+              <div className="confirmed-review-section">
+                <p className="after-appointment-text">Después de que efectivamente ocurra la cita:</p>
+                <button 
+                  onClick={() => navigateTo('review')} 
+                  className="btn-ice-secondary"
+                >
+                  ¿Cómo fue tu experiencia?
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* PANTALLA 12: RESEÑA Y VALORACIÓN DE LA ATENCIÓN           */}
+          {/* ======================================================== */}
+          {currentScreen === 'review' && (
+            <div className="screen-view view-review">
+              <h2 className="chat-main-heading" style={{ marginBottom: '8px' }}>
+                ¿Cómo fue tu experiencia?
+              </h2>
+              <p className="prompt-sub-heading" style={{ marginBottom: '18px' }}>
+                Tu opinión anónima ayuda a otros estudiantes a encontrar el apoyo adecuado.
+              </p>
+
+              <div className="summary-ice-card review-interactive-box">
+                <strong style={{ fontSize: '13.5px', color: '#1e293b', display: 'block', marginBottom: '8px' }}>
+                  Califica la atención recibida:
+                </strong>
+                <div className="stars-interactive-picker">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button 
+                      key={star} 
+                      onClick={() => setReviewStars(star)} 
+                      className={star <= reviewStars ? 'star-btn-pick active' : 'star-btn-pick'}
+                    >
+                      ★
+                    </button>
+                  ))}
+                  <span className="stars-val-label">{reviewStars} de 5 estrellas</span>
+                </div>
+
+                <textarea 
+                  placeholder="Escribe un breve comentario sobre la sesión (ej. 'Trato muy humano y puntual')..."
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  className="review-textarea-field"
+                  rows={3}
+                ></textarea>
+              </div>
+
+              <div className="review-bottom-cta">
+                <button 
+                  onClick={() => {
+                    setReviewSent(true);
+                    alert('¡Muchas gracias! Tu reseña anónima ha sido registrada.');
+                    navigateTo('welcome');
+                  }} 
+                  className="btn-teal-primary"
+                >
+                  Enviar reseña
                 </button>
               </div>
             </div>

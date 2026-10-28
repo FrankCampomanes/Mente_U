@@ -1,6 +1,7 @@
 /* ========================================================
-   ESTILOS VISUALES MENTEU - WIREFRAMES EXACTOS DEL PROFESOR
+   ESTILOS VISUALES MENTEU - 12 WIREFRAMES EXACTOS DEL PROFESOR
    Colores: Blanco/Celeste suave (#f4f8fb, #eaf4fc)
+            Verde menta confirmado (#d5f7e6)
             Azul MenteU (#0284c7)
             Verde Turquesa Profundo (#0d9488 / #0f766e)
    ======================================================== */
@@ -353,8 +354,24 @@ body {
   transition: all 0.15s ease;
 }
 
+.btn-teal-pill-send {
+  background: #0d9488;
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-teal-pill-send:hover {
+  background: #0f766e;
+}
+
 /* ========================================================
-   PANTALLA 3: CHAT
+   PANTALLA 3: CHAT CON IA
    ======================================================== */
 .chat-title-row {
   margin-top: 4px;
@@ -488,7 +505,7 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 5: OPCIONES DE APOYO (Mockup 2 del nuevo set)
+   PANTALLA 5: OPCIONES DE APOYO
    ======================================================== */
 .filter-pills-grid {
   display: grid;
@@ -590,7 +607,7 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 6: PERFIL DEL PROFESIONAL (Mockups 3 y 4)
+   PANTALLA 6: PERFIL DEL PROFESIONAL
    ======================================================== */
 .profile-header-card {
   display: flex;
@@ -696,7 +713,7 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 7: SELECCIONA FECHA Y HORA (Mockup 1 del nuevo set)
+   PANTALLA 7: SELECCIONA FECHA Y HORA
    ======================================================== */
 .days-pills-row {
   display: flex;
@@ -775,34 +792,153 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 8: TICKET DE ÉXITO
+   PANTALLA 8: CHAT CON PROFESIONAL (Mockup 4)
    ======================================================== */
-.success-check-circle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #0d9488;
-  color: white;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 20px auto 14px auto;
+.view-prochat {
+  justify-content: space-between;
 }
 
-.success-main-heading {
-  font-size: 20px;
-  font-weight: 700;
-  text-align: center;
+/* ========================================================
+   PANTALLA 9: PROPUESTA DE HORARIO (Mockup 3)
+   ======================================================== */
+.propose-time-card {
+  padding: 24px 20px;
+  margin-top: 10px;
+  margin-bottom: 24px;
+}
+
+.propose-lead-text {
+  font-size: 13.5px;
+  color: #334155;
   margin-bottom: 8px;
 }
 
-.success-ticket-card {
-  line-height: 1.8;
-  font-size: 13.5px;
+.propose-time-highlight {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #1e293b;
 }
 
-.success-actions-bottom {
+.propose-actions-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ========================================================
+   PANTALLA 10: CONFIRMACIÓN Y DETALLE (Mockup 2)
+   ======================================================== */
+.detail-summary-card {
+  padding: 22px 20px;
+  margin-top: 10px;
+  margin-bottom: 24px;
+}
+
+.detail-summary-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.detail-lines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13.5px;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.confirm-detail-bottom-cta {
+  margin-top: auto;
+}
+
+/* ========================================================
+   PANTALLA 11: CITA CONFIRMADA (Mockup 1)
+   ======================================================== */
+.confirmed-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+.confirmed-check-icon {
+  font-size: 19px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+/* Caja verde menta suave idéntica a la captura */
+.confirmed-mint-card {
+  background: #d5f7e6;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+
+.confirmed-review-section {
+  margin-top: 8px;
+}
+
+.after-appointment-text {
+  font-size: 12.5px;
+  color: #334155;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+/* ========================================================
+   PANTALLA 12: RESEÑA
+   ======================================================== */
+.stars-interactive-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.star-btn-pick {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  line-height: 1;
+}
+
+.star-btn-pick.active {
+  color: #0d9488;
+}
+
+.stars-val-label {
+  font-size: 12.5px;
+  color: #0d9488;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.review-textarea-field {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #1e293b;
+  outline: none;
+  resize: vertical;
+}
+
+.review-textarea-field:focus {
+  border-color: #0d9488;
+}
+
+.review-bottom-cta {
   margin-top: auto;
 }
 
