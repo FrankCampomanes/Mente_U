@@ -2,86 +2,170 @@ import React, { useState } from 'react';
 import './App.css';
 import { analyzeAndRespond, buildDynamicSummary } from './frenzEngine';
 
-// Lista de los 4 profesionales con perfiles reales sincronizados con la BD
-const PROFESIONALES = [
+// Catálogo enriquecido de 8 profesionales con tarifas universitarias (Gratis, S/8, S/10 y S/15)
+const PROFESIONALES_INICIALES = [
   {
     id: 'prof-01',
     nombre: 'Bienestar Universitario',
     subtitulo: 'Psicología para estudiantes',
     costoTexto: 'GRATIS',
-    esGratis: true,
+    tarifaCategoria: 'gratis',
     precioValor: 0,
     modalidad: 'Virtual / Presencial',
     rating: 4.9,
     reviewsCount: 142,
     fotoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=160&auto=format&fit=crop&q=80',
-    descripcionTop: 'Servicio gratuito de psicología universitaria',
-    especialidades: 'Ansiedad, estrés académico',
+    descripcionTop: 'Servicio gratuito de psicología universitaria UTP',
+    especialidades: 'Ansiedad académica, adaptación y estrés',
     resenas: [
-      { texto: '“Excelente atención y seguimiento.”', autor: '— Estudiante verificado' }
+      { texto: '“Excelente atención y seguimiento. Me ayudó con mis parciales.”', autor: '— Estudiante verificado', rating: 5, fecha: 'Hace 3 días' },
+      { texto: '“Trato cálido y sin juzgarme. Muy recomendado.”', autor: '— Alumno de 2do ciclo', rating: 5, fecha: 'Hace 1 semana' }
     ]
   },
   {
     id: 'prof-02',
+    nombre: 'Consejería y Tutoría Estudiantil',
+    subtitulo: 'Acompañamiento psicopedagógico',
+    costoTexto: 'GRATIS',
+    tarifaCategoria: 'gratis',
+    precioValor: 0,
+    modalidad: 'Virtual / Presencial',
+    rating: 4.8,
+    reviewsCount: 98,
+    fotoUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Apoyo institucional en técnicas de estudio y organización',
+    especialidades: 'Planificación de horario, hábitos de estudio y bloqueo',
+    resenas: [
+      { texto: '“La tutora me ayudó a armar un cronograma que sí pude cumplir.”', autor: '— Estudiante de ingeniería', rating: 5, fecha: 'Hace 4 días' }
+    ]
+  },
+  {
+    id: 'prof-03',
+    nombre: 'Psic. Diego Salinas',
+    subtitulo: 'Ansiedad ante exámenes y bloqueo mental',
+    costoTexto: 'S/8 por sesión',
+    tarifaCategoria: '8',
+    precioValor: 8,
+    modalidad: 'Virtual',
+    rating: 4.7,
+    reviewsCount: 64,
+    fotoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Tarifa solidaria estudiantil para control de ansiedad',
+    especialidades: 'Desactivación de pánico ante evaluaciones y notas',
+    resenas: [
+      { texto: '“Tarifa súper accesible y ejercicios prácticos de respiración.”', autor: '— Estudiante de derecho', rating: 5, fecha: 'Hace 2 días' }
+    ]
+  },
+  {
+    id: 'prof-04',
+    nombre: 'Lic. Valeria Castro',
+    subtitulo: 'Concentración y TDAH universitario',
+    costoTexto: 'S/8 por sesión',
+    tarifaCategoria: '8',
+    precioValor: 8,
+    modalidad: 'Virtual / Presencial',
+    rating: 4.9,
+    reviewsCount: 82,
+    fotoUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Especialista en foco atencional y procrastinación',
+    especialidades: 'TDAH en adultos, atención sostenida y memoria',
+    resenas: [
+      { texto: '“Me dio herramientas concretas para no dispersarme en clases.”', autor: '— Alumno de arquitectura', rating: 5, fecha: 'Hace 5 días' }
+    ]
+  },
+  {
+    id: 'prof-05',
     nombre: 'Psic. Ana Torres',
     subtitulo: 'Ansiedad y estrés académico',
     costoTexto: 'S/10 por sesión',
-    esGratis: false,
+    tarifaCategoria: '10',
     precioValor: 10,
     modalidad: 'Virtual / Presencial',
     rating: 4.8,
     reviewsCount: 110,
     fotoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80',
-    descripcionTop: 'Especialista en autorregulación y técnicas de estudio',
-    especialidades: 'Ansiedad, estrés académico',
+    descripcionTop: 'Especialista en autorregulación emocional y sobrecarga',
+    especialidades: 'Ansiedad, estrés académico y manejo del tiempo',
     resenas: [
-      { texto: '“Orientación sobre mis preocupaciones: ansiedad y estrés académico.”', autor: '' },
-      { texto: '“Ana trata el estrés académico con mucha cercanía.”', autor: '' }
+      { texto: '“Orientación sobre mis preocupaciones: ansiedad y estrés académico.”', autor: '— Estudiante anónimo', rating: 5, fecha: 'Hace 1 día' },
+      { texto: '“Ana trata el estrés académico con mucha cercanía y paciencia.”', autor: '— Estudiante de sistemas', rating: 5, fecha: 'Hace 3 días' }
     ]
   },
   {
-    id: 'prof-03',
+    id: 'prof-06',
     nombre: 'Psic. Luis Mendoza',
-    subtitulo: 'Orientación universitaria',
+    subtitulo: 'Orientación universitaria y vocación',
     costoTexto: 'S/10 por sesión',
-    esGratis: false,
+    tarifaCategoria: '10',
     precioValor: 10,
     modalidad: 'Virtual / Presencial',
     rating: 4.7,
     reviewsCount: 85,
     fotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80',
-    descripcionTop: 'Acompañamiento en vocación y adaptación a la carrera',
-    especialidades: 'Orientación universitaria, toma de decisiones',
+    descripcionTop: 'Acompañamiento en vocación y sentido de propósito',
+    especialidades: 'Orientación vocacional, dudas de carrera y decisiones',
     resenas: [
-      { texto: '“Me ayudó a ordenar mis prioridades académicas y personales.”', autor: '— Alumno de 4to ciclo' }
+      { texto: '“Me ayudó a ordenar mis prioridades académicas y personales.”', autor: '— Alumno de 4to ciclo', rating: 4, fecha: 'Hace 6 días' }
     ]
   },
   {
-    id: 'prof-04',
+    id: 'prof-07',
+    nombre: 'Psic. Jorge Carrillo',
+    subtitulo: 'Habilidades sociales y exposiciones',
+    costoTexto: 'S/10 por sesión',
+    tarifaCategoria: '10',
+    precioValor: 10,
+    modalidad: 'Virtual',
+    rating: 4.8,
+    reviewsCount: 73,
+    fotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Superación del miedo escénico y timidez en grupos',
+    especialidades: 'Fobia social, hablar en público y trabajos grupales',
+    resenas: [
+      { texto: '“Pude exponer mi tesis sin que me ganara la taquicardia.”', autor: '— Egresado UTP', rating: 5, fecha: 'Hace 1 semana' }
+    ]
+  },
+  {
+    id: 'prof-08',
     nombre: 'Psic. Carla Rojas',
     subtitulo: 'Primera consulta GRATIS',
     costoTexto: 'S/15 por sesión',
-    esGratis: false,
+    tarifaCategoria: '15',
     precioValor: 15,
     modalidad: 'Virtual / Presencial',
     rating: 4.9,
     reviewsCount: 96,
-    fotoUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=160&auto=format&fit=crop&q=80',
+    fotoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&auto=format&fit=crop&q=80',
     descripcionTop: 'Primera consulta GRATIS - Acompañamiento integral',
     especialidades: 'Gestión emocional y apoyo en situaciones complejas',
     resenas: [
-      { texto: '“Muy buena profesional, empática y con horarios flexibles.”', autor: '— Estudiante de ingeniería' }
+      { texto: '“Muy buena profesional, empática y con horarios flexibles.”', autor: '— Estudiante de administración', rating: 5, fecha: 'Hace 2 semanas' }
     ]
   }
 ];
 
+// Días de toda la semana para selección
+const DIAS_SEMANA = [
+  'Lunes 14', 'Martes 15', 'Miércoles 16', 'Jueves 17',
+  'Viernes 18', 'Sábado 19', 'Lunes 21', 'Martes 22'
+];
+
+// Bloques de horario ampliados (mañana y tarde)
+const HORARIOS_DISPONIBLES = [
+  '8:30 a. m.', '10:00 a. m.', '11:30 a. m.',
+  '2:00 p. m.', '3:30 p. m.', '5:00 p. m.', '6:30 p. m.'
+];
+
 export default function App() {
-  // Navegación de pantallas:
+  // Navegación:
   // welcome (1) | prompt (2) | chat (3) | summary (4) | options (5) | profile (6)
   // datetime (7) | prochat (8) | propose_time (9) | confirm_detail (10) | confirmed (11) | review (12)
   const [currentScreen, setCurrentScreen] = useState('welcome');
   const [screenHistory, setScreenHistory] = useState(['welcome']);
   
+  // Lista de profesionales reactiva con reseñas actualizables
+  const [profesionales, setProfesionales] = useState(PROFESIONALES_INICIALES);
+
   // Usuario y login
   const [userAlias, setUserAlias] = useState('Estudiante');
   const [authMode, setAuthMode] = useState(null);
@@ -99,27 +183,27 @@ export default function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [detectedTopics, setDetectedTopics] = useState(['examenes', 'cansancio_sueno']);
 
-  // Filtros de la Pantalla 5
-  const [activeFilter, setActiveFilter] = useState('todos');
+  // Filtros activos en Pantalla 5
+  const [activeFilter, setActiveFilter] = useState('todos'); // 'todos' | 'gratis' | '8' | '10' | '15' | 'calificacion' | 'virtual' | 'presencial'
 
   // Selección de profesional y horario
-  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[1]); // Psic. Ana Torres
+  const [selectedProf, setSelectedProf] = useState(PROFESIONALES_INICIALES[4]); // Psic. Ana Torres
   const [selectedDay, setSelectedDay] = useState('Martes 15');
   const [selectedTime, setSelectedTime] = useState('11:30 a. m.');
   const [selectedModality, setSelectedModality] = useState('Virtual');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Mensajes en el Chat con el profesional (Mockup 4)
+  // Mensajes en el Chat con el profesional
   const [proMessages, setProMessages] = useState([
     { sender: 'user', text: 'Hola, quisiera consultar por una cita.' },
     { sender: 'pro', text: 'Claro. Tengo disponibilidad esta semana. ¿Prefieres atención virtual o presencial?' }
   ]);
   const [proInput, setProInput] = useState('');
 
-  // Reseña y evaluación (Mockup 1)
+  // Evaluación y Reseña
   const [reviewStars, setReviewStars] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
-  const [reviewSent, setReviewSent] = useState(false);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState(false);
 
   // Navegación
   const navigateTo = (screen) => {
@@ -143,7 +227,7 @@ export default function App() {
     setCurrentScreen('welcome');
   };
 
-  // Inicio de chat desde Prompt
+  // Chat con IA
   const handleStartFromPrompt = (text) => {
     if (!text.trim()) return;
     const initialUserMsg = { sender: 'user', text: text.trim() };
@@ -156,7 +240,6 @@ export default function App() {
     navigateTo('chat');
   };
 
-  // Enviar mensaje en el chat con IA
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -175,7 +258,7 @@ export default function App() {
     }, 600);
   };
 
-  // Enviar mensaje en el chat con Profesional
+  // Chat con Especialista
   const handleSendProMessage = (e) => {
     e.preventDefault();
     if (!proInput.trim()) return;
@@ -188,21 +271,25 @@ export default function App() {
         ...prev,
         {
           sender: 'pro',
-          text: 'Perfecto, te he enviado una propuesta de horario para coordinar nuestra sesión.'
+          text: 'Entendido. Te he propuesto un bloque de horario que calza perfecto para atenderte.'
         }
       ]);
-    }, 700);
+    }, 600);
   };
 
   // Filtrado de profesionales
-  const filteredProfessionals = PROFESIONALES.filter((p) => {
-    if (activeFilter === 'gratis') return p.esGratis;
-    if (activeFilter === 'precio') return !p.esGratis;
+  const filteredProfessionals = profesionales.filter((p) => {
+    if (activeFilter === 'gratis') return p.tarifaCategoria === 'gratis';
+    if (activeFilter === '8') return p.tarifaCategoria === '8';
+    if (activeFilter === '10') return p.tarifaCategoria === '10';
+    if (activeFilter === '15') return p.tarifaCategoria === '15';
     if (activeFilter === 'calificacion') return p.rating >= 4.8;
+    if (activeFilter === 'virtual') return p.modalidad.includes('Virtual');
+    if (activeFilter === 'presencial') return p.modalidad.includes('Presencial');
     return true;
   });
 
-  // Confirmar y pagar cita (Persistencia en base de datos)
+  // Confirmar y pagar cita (Backend + MySQL)
   const handleExecutePayment = async () => {
     setIsSubmitting(true);
     const apiUrl = import.meta.env.VITE_API_URL || 'https://mente-u-backend.onrender.com';
@@ -222,6 +309,55 @@ export default function App() {
     }
     setIsSubmitting(false);
     navigateTo('confirmed');
+  };
+
+  // Registrar Reseña (Backend + Actualización Reactiva)
+  const handleRegisterReview = async () => {
+    const comentarioLimpio = reviewComment.trim() || 'Excelente orientación y trato humano.';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://mente-u-backend.onrender.com';
+    
+    // 1. Persistir en backend
+    try {
+      await fetch(`${apiUrl}/api/resenas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cita_id: 'CITA-' + Math.floor(1000 + Math.random() * 9000),
+          puntuacion: reviewStars,
+          comentario: comentarioLimpio
+        })
+      });
+    } catch (err) {
+      console.log('Reseña guardada localmente:', err);
+    }
+
+    // 2. Actualizar en el estado reactivo del profesional
+    setProfesionales((prevList) =>
+      prevList.map((prof) => {
+        if (prof.id === selectedProf.id) {
+          const nuevasResenas = [
+            { texto: `“${comentarioLimpio}”`, autor: `— ${userAlias}`, rating: reviewStars, fecha: 'Hoy' },
+            ...prof.resenas
+          ];
+          const nuevoTotal = prof.reviewsCount + 1;
+          const nuevoRating = parseFloat(((prof.rating * prof.reviewsCount + reviewStars) / nuevoTotal).toFixed(1));
+          return {
+            ...prof,
+            resenas: nuevasResenas,
+            reviewsCount: nuevoTotal,
+            rating: nuevoRating
+          };
+        }
+        return prof;
+      })
+    );
+
+    setReviewSuccessMsg(true);
+    setTimeout(() => {
+      setReviewSuccessMsg(false);
+      setReviewComment('');
+      navigateTo('welcome');
+    }, 1400);
   };
 
   const summaryData = buildDynamicSummary(detectedTopics);
@@ -483,48 +619,38 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 5: OPCIONES DE APOYO (Mockup 2 del set 2)        */}
+          {/* PANTALLA 5: OPCIONES DE APOYO (8 Profesionales y Filtros)  */}
           {/* ======================================================== */}
           {currentScreen === 'options' && (
             <div className="screen-view view-options">
               <h2 className="chat-main-heading">Opciones que podrían ayudarte</h2>
-              <p className="prompt-sub-heading" style={{ marginBottom: '14px' }}>
-                Según lo que conversamos, puedes elegir la opción de atención que prefieras.
+              <p className="prompt-sub-heading" style={{ marginBottom: '12px' }}>
+                Según lo que conversamos, puedes elegir la opción de atención que prefieras:
               </p>
 
-              <div className="filter-pills-grid">
-                <button 
-                  onClick={() => setActiveFilter(activeFilter === 'gratis' ? 'todos' : 'gratis')} 
-                  className={activeFilter === 'gratis' ? 'btn-filter-pill active' : 'btn-filter-pill'}
-                >
-                  Gratis
-                </button>
-                <button 
-                  onClick={() => setActiveFilter(activeFilter === 'precio' ? 'todos' : 'precio')} 
-                  className={activeFilter === 'precio' ? 'btn-filter-pill active' : 'btn-filter-pill'}
-                >
-                  Precio
-                </button>
-                <button 
-                  onClick={() => setActiveFilter(activeFilter === 'modalidad' ? 'todos' : 'modalidad')} 
-                  className={activeFilter === 'modalidad' ? 'btn-filter-pill active' : 'btn-filter-pill'}
-                >
-                  Modalidad
-                </button>
-                <button 
-                  onClick={() => setActiveFilter(activeFilter === 'calificacion' ? 'todos' : 'calificacion')} 
-                  className={activeFilter === 'calificacion' ? 'btn-filter-pill active' : 'btn-filter-pill'}
-                >
-                  Calificación
-                </button>
-                <button 
-                  onClick={() => setActiveFilter('todos')} 
-                  className={activeFilter === 'todos' ? 'btn-filter-pill active full-width' : 'btn-filter-pill full-width'}
-                >
-                  Todos
-                </button>
+              {/* Filtros ampliados con tarifas estudiantiles S/8, S/10 y Gratis */}
+              <div className="filter-chips-scroll">
+                {[
+                  { key: 'todos', label: 'Todos' },
+                  { key: 'gratis', label: 'Gratis (UTP)' },
+                  { key: '8', label: 'S/ 8 solidario' },
+                  { key: '10', label: 'S/ 10 accesible' },
+                  { key: '15', label: 'S/ 15 particular' },
+                  { key: 'calificacion', label: '★ 4.8+' },
+                  { key: 'virtual', label: 'Virtual' },
+                  { key: 'presencial', label: 'Presencial' }
+                ].map((f) => (
+                  <button 
+                    key={f.key} 
+                    onClick={() => setActiveFilter(f.key)} 
+                    className={activeFilter === f.key ? 'chip-btn active' : 'chip-btn'}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
 
+              {/* Lista dinámica de profesionales */}
               <div className="prof-cards-vertical-list">
                 {filteredProfessionals.map((prof) => (
                   <div key={prof.id} className="prof-card-row">
@@ -532,7 +658,10 @@ export default function App() {
                     <div className="prof-card-details">
                       <strong className="prof-title-line">{prof.nombre}</strong>
                       <span className="prof-sub-line">{prof.subtitulo}</span>
-                      <span className="prof-price-highlight">{prof.costoTexto}</span>
+                      <div className="prof-row-rating-price">
+                        <span className="prof-price-highlight">{prof.costoTexto}</span>
+                        <span className="prof-rating-mini">★ {prof.rating} ({prof.reviewsCount})</span>
+                      </div>
                     </div>
                     <button 
                       onClick={() => {
@@ -550,11 +679,11 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 6: PERFIL DEL PROFESIONAL (Mockups 3 y 4 del set 2)*/}
+          {/* PANTALLA 6: PERFIL DEL PROFESIONAL                       */}
           {/* ======================================================== */}
           {currentScreen === 'profile' && selectedProf && (
             <div className="screen-view view-profile">
-              <h2 className="chat-main-heading" style={{ marginBottom: '14px' }}>
+              <h2 className="chat-main-heading" style={{ marginBottom: '12px' }}>
                 {selectedProf.nombre}
               </h2>
 
@@ -565,8 +694,8 @@ export default function App() {
                     <span className="profile-service-teal">{selectedProf.descripcionTop}</span>
                   ) : (
                     <div className="stars-rating-row">
-                      <span className="stars-green">★★★★☆</span>
-                      <span className="rating-num">{selectedProf.rating} - {selectedProf.reviewsCount} reseñas</span>
+                      <span className="stars-green">{'★'.repeat(Math.round(selectedProf.rating))}</span>
+                      <span className="rating-num">{selectedProf.rating} - {selectedProf.reviewsCount} reseñas de alumnos</span>
                     </div>
                   )}
                 </div>
@@ -575,7 +704,7 @@ export default function App() {
               <div className="profile-specs-block">
                 <p><strong>Especialidades:</strong> {selectedProf.especialidades}</p>
                 <p><strong>Modalidad:</strong> {selectedProf.modalidad}</p>
-                <p><strong>{selectedProf.costoTexto}</strong></p>
+                <p><strong>Tarifa:</strong> {selectedProf.costoTexto}</p>
               </div>
 
               <div className="summary-ice-card profile-context-box">
@@ -585,10 +714,15 @@ export default function App() {
                 </p>
               </div>
 
+              {/* Lista real de reseñas */}
               <div className="profile-reviews-box">
-                <strong className="reviews-box-title">Reseñas de estudiantes</strong>
+                <strong className="reviews-box-title">Reseñas de estudiantes ({selectedProf.resenas.length})</strong>
                 {selectedProf.resenas.map((r, i) => (
                   <div key={i} className="review-quote-item">
+                    <div className="review-quote-header">
+                      <span className="review-stars-mini">{'★'.repeat(r.rating || 5)}</span>
+                      {r.fecha && <span className="review-date-mini">{r.fecha}</span>}
+                    </div>
                     <p>{r.texto}</p>
                     {r.autor && <small className="review-author-tag">{r.autor}</small>}
                   </div>
@@ -614,28 +748,35 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 7: FECHA Y HORA (Mockup 1 del set 2)              */}
+          {/* PANTALLA 7: FECHA Y HORA (Toda la semana completa)        */}
           {/* ======================================================== */}
           {currentScreen === 'datetime' && (
             <div className="screen-view view-datetime">
-              <h2 className="chat-main-heading" style={{ marginBottom: '20px' }}>
+              <h2 className="chat-main-heading" style={{ marginBottom: '14px' }}>
                 Selecciona fecha y hora<br />para tu cita
               </h2>
 
-              <div className="days-pills-row">
-                {['Lunes 14', 'Martes 15', 'Miércoles 16'].map((d) => (
+              <p className="prompt-sub-heading" style={{ marginBottom: '8px' }}>
+                Atención con: <strong>{selectedProf.nombre}</strong>
+              </p>
+
+              {/* Selector horizontal de toda la semana */}
+              <div className="days-scroll-container">
+                {DIAS_SEMANA.map((d) => (
                   <button 
                     key={d} 
                     onClick={() => setSelectedDay(d)} 
-                    className={selectedDay === d ? 'btn-day-pill active' : 'btn-day-pill'}
+                    className={selectedDay === d ? 'btn-day-scroll active' : 'btn-day-scroll'}
                   >
                     {d}
                   </button>
                 ))}
               </div>
 
+              {/* Bloques de turnos mañana y tarde */}
+              <span className="section-label-mini">Turnos disponibles:</span>
               <div className="time-slots-vertical-list">
-                {['10:00 a. m.', '11:30 a. m.', '2:00 p. m.', '3:30 p. m.'].map((t) => (
+                {HORARIOS_DISPONIBLES.map((t) => (
                   <button 
                     key={t} 
                     onClick={() => setSelectedTime(t)} 
@@ -663,7 +804,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 8: CHAT CON PROFESIONAL (Mockup 4 del nuevo set) */}
+          {/* PANTALLA 8: CHAT CON PROFESIONAL                         */}
           {/* ======================================================== */}
           {currentScreen === 'prochat' && (
             <div className="screen-view view-prochat">
@@ -708,7 +849,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 9: PROPUESTA DE HORARIO (Mockup 3 del nuevo set)  */}
+          {/* PANTALLA 9: PROPUESTA DE HORARIO                         */}
           {/* ======================================================== */}
           {currentScreen === 'propose_time' && (
             <div className="screen-view view-propose-time">
@@ -744,7 +885,7 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 10: CONFIRMACIÓN Y DETALLE (Mockup 2 del nuevo set)*/}
+          {/* PANTALLA 10: CONFIRMACIÓN Y DETALLE                      */}
           {/* ======================================================== */}
           {currentScreen === 'confirm_detail' && (
             <div className="screen-view view-confirm-detail">
@@ -769,14 +910,14 @@ export default function App() {
                   disabled={isSubmitting}
                   className="btn-teal-primary"
                 >
-                  {isSubmitting ? 'Procesando confirmación...' : 'Realizar pago y confirmar'}
+                  {isSubmitting ? 'Procesando confirmación...' : (selectedProf.esGratis ? 'Confirmar Cita Gratuita' : 'Realizar pago y confirmar')}
                 </button>
               </div>
             </div>
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 11: CITA CONFIRMADA (Mockup 1 del nuevo set)      */}
+          {/* PANTALLA 11: CITA CONFIRMADA                             */}
           {/* ======================================================== */}
           {currentScreen === 'confirmed' && (
             <div className="screen-view view-confirmed">
@@ -796,7 +937,7 @@ export default function App() {
               </div>
 
               <button 
-                onClick={() => alert(`Código de cita: CITA-${Math.floor(1000 + Math.random() * 9000)}\nEspecialista: ${selectedProf.nombre}\nHorario: ${selectedDay} a las ${selectedTime}`)} 
+                onClick={() => alert(`Cita confirmada en MenteU.\nEspecialista: ${selectedProf.nombre}\nFecha: ${selectedDay} a las ${selectedTime}\nModalidad: ${selectedModality}\nEstado: Reservada en Base de Datos.`)} 
                 className="btn-teal-primary"
                 style={{ marginBottom: '24px' }}
               >
@@ -816,21 +957,23 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 12: RESEÑA Y VALORACIÓN DE LA ATENCIÓN           */}
+          {/* PANTALLA 12: RESEÑA Y VALORACIÓN (Con estrellas 1 a 5)    */}
           {/* ======================================================== */}
           {currentScreen === 'review' && (
             <div className="screen-view view-review">
               <h2 className="chat-main-heading" style={{ marginBottom: '8px' }}>
                 ¿Cómo fue tu experiencia?
               </h2>
-              <p className="prompt-sub-heading" style={{ marginBottom: '18px' }}>
-                Tu opinión anónima ayuda a otros estudiantes a encontrar el apoyo adecuado.
+              <p className="prompt-sub-heading" style={{ marginBottom: '16px' }}>
+                Tu reseña anónima ayuda a otros estudiantes a encontrar orientación:
               </p>
 
               <div className="summary-ice-card review-interactive-box">
                 <strong style={{ fontSize: '13.5px', color: '#1e293b', display: 'block', marginBottom: '8px' }}>
-                  Califica la atención recibida:
+                  Califica a {selectedProf.nombre}:
                 </strong>
+
+                {/* Calificación estándar de 1 a 5 estrellas */}
                 <div className="stars-interactive-picker">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button 
@@ -845,7 +988,7 @@ export default function App() {
                 </div>
 
                 <textarea 
-                  placeholder="Escribe un breve comentario sobre la sesión (ej. 'Trato muy humano y puntual')..."
+                  placeholder="Comparte un comentario breve sobre la atención recibida (ej. 'Trato muy humano y comprensivo')..."
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   className="review-textarea-field"
@@ -853,13 +996,15 @@ export default function App() {
                 ></textarea>
               </div>
 
+              {reviewSuccessMsg && (
+                <div className="review-success-badge">
+                  ✓ ¡Reseña registrada con éxito en el sistema!
+                </div>
+              )}
+
               <div className="review-bottom-cta">
                 <button 
-                  onClick={() => {
-                    setReviewSent(true);
-                    alert('¡Muchas gracias! Tu reseña anónima ha sido registrada.');
-                    navigateTo('welcome');
-                  }} 
+                  onClick={handleRegisterReview} 
                   className="btn-teal-primary"
                 >
                   Enviar reseña

@@ -37,8 +37,8 @@ body {
 /* Marco realista de smartphone idéntico a las capturas */
 .smartphone-frame {
   width: 100%;
-  max-width: 380px;
-  min-height: 760px;
+  max-width: 385px;
+  min-height: 770px;
   background: #f4f8fb;
   border-radius: 46px;
   border: 11px solid #1a202c;
@@ -366,10 +366,6 @@ body {
   transition: all 0.15s ease;
 }
 
-.btn-teal-pill-send:hover {
-  background: #0f766e;
-}
-
 /* ========================================================
    PANTALLA 3: CHAT CON IA
    ======================================================== */
@@ -505,35 +501,36 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 5: OPCIONES DE APOYO
+   PANTALLA 5: OPCIONES DE APOYO (8 Especialistas y Filtros)
    ======================================================== */
-.filter-pills-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 14px;
+.filter-chips-scroll {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
 }
 
-.btn-filter-pill {
+.filter-chips-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-btn {
+  white-space: nowrap;
   background: #eaf4fc;
   color: #0284c7;
-  border-radius: 12px;
-  padding: 9px 12px;
-  font-size: 13px;
+  border-radius: 16px;
+  padding: 6px 14px;
+  font-size: 12.5px;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  text-align: center;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
-.btn-filter-pill.full-width {
-  grid-column: span 2;
-  width: 100px;
-  margin-left: 0;
-}
-
-.btn-filter-pill.active {
+.chip-btn.active {
   background: #0d9488;
   color: #ffffff;
 }
@@ -582,11 +579,26 @@ body {
   line-height: 1.3;
 }
 
+.prof-row-rating-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
 .prof-price-highlight {
   font-size: 12px;
   font-weight: 700;
   color: #1e293b;
-  margin-top: 2px;
+}
+
+.prof-rating-mini {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0d9488;
+  background: #e6fffa;
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
 .btn-ice-ver-perfil {
@@ -639,12 +651,12 @@ body {
 
 .stars-green {
   color: #0d9488;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 1px;
 }
 
 .rating-num {
-  font-size: 12.5px;
+  font-size: 12px;
   color: #0d9488;
   font-weight: 600;
 }
@@ -680,6 +692,8 @@ body {
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 16px;
+  max-height: 180px;
+  overflow-y: auto;
 }
 
 .reviews-box-title {
@@ -691,7 +705,31 @@ body {
 }
 
 .review-quote-item {
-  margin-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 6px;
+}
+
+.review-quote-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.review-quote-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.review-stars-mini {
+  color: #0d9488;
+  font-size: 12px;
+}
+
+.review-date-mini {
+  font-size: 11px;
+  color: #94a3b8;
 }
 
 .review-quote-item p {
@@ -713,17 +751,25 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 7: SELECCIONA FECHA Y HORA
+   PANTALLA 7: SELECCIONA FECHA Y HORA (Toda la semana)
    ======================================================== */
-.days-pills-row {
+.days-scroll-container {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
 }
 
-.btn-day-pill {
-  flex: 1;
-  padding: 11px 8px;
+.days-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-day-scroll {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 10px 14px;
   border-radius: 12px;
   border: none;
   background: #eaf4fc;
@@ -731,21 +777,30 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  text-align: center;
   transition: all 0.15s ease;
 }
 
-.btn-day-pill.active {
+.btn-day-scroll.active {
   background: #0d9488;
   color: #ffffff;
   box-shadow: 0 3px 8px rgba(13, 148, 136, 0.25);
 }
 
+.section-label-mini {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
 .time-slots-vertical-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 18px;
+  gap: 7px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 14px;
 }
 
 .btn-time-slot {
@@ -753,7 +808,7 @@ body {
   color: #0284c7;
   border: none;
   border-radius: 12px;
-  padding: 13px 16px;
+  padding: 11px 16px;
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
@@ -773,7 +828,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .selected-lead-tag {
@@ -792,14 +847,14 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 8: CHAT CON PROFESIONAL (Mockup 4)
+   PANTALLA 8: CHAT CON PROFESIONAL
    ======================================================== */
 .view-prochat {
   justify-content: space-between;
 }
 
 /* ========================================================
-   PANTALLA 9: PROPUESTA DE HORARIO (Mockup 3)
+   PANTALLA 9: PROPUESTA DE HORARIO
    ======================================================== */
 .propose-time-card {
   padding: 24px 20px;
@@ -827,7 +882,7 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 10: CONFIRMACIÓN Y DETALLE (Mockup 2)
+   PANTALLA 10: CONFIRMACIÓN Y DETALLE
    ======================================================== */
 .detail-summary-card {
   padding: 22px 20px;
@@ -857,7 +912,7 @@ body {
 }
 
 /* ========================================================
-   PANTALLA 11: CITA CONFIRMADA (Mockup 1)
+   PANTALLA 11: CITA CONFIRMADA
    ======================================================== */
 .confirmed-header-row {
   display: flex;
@@ -873,7 +928,6 @@ body {
   color: #1e293b;
 }
 
-/* Caja verde menta suave idéntica a la captura */
 .confirmed-mint-card {
   background: #d5f7e6;
   border-radius: 14px;
@@ -936,6 +990,17 @@ body {
 
 .review-textarea-field:focus {
   border-color: #0d9488;
+}
+
+.review-success-badge {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
 .review-bottom-cta {

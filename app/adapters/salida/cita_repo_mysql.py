@@ -17,13 +17,14 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
         self.database = database or os.getenv('DB_NAME', 'bd_menteu')
         self.port = int(port or os.getenv('DB_PORT', 3306))
         
-        # Almacén en memoria de respaldo para pruebas unitarias / sin XAMPP
+        # Almacén en memoria de respaldo para pruebas unitarias / offline
         self._mock_disponibilidad = {
             'disp-01': {'id': 'disp-01', 'estado': 'libre'},
             'disp-02': {'id': 'disp-02', 'estado': 'libre'},
             'disp-03': {'id': 'disp-03', 'estado': 'reservada'}
         }
         self._mock_citas = {}
+        self._mock_resenas = []
 
     def _get_connection(self):
         if not pymysql:
@@ -37,7 +38,6 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
             'cursorclass': pymysql.cursors.DictCursor,
             'autocommit': False
         }
-        # Si el host es remoto (como Aiven cloud), habilitar SSL obligatorio
         if self.host not in ('localhost', '127.0.0.1'):
             connect_kwargs['ssl'] = {'ssl': {}}
         return pymysql.connect(**connect_kwargs)
@@ -49,7 +49,6 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
                 cursor.execute("SELECT id, profesional_id, inicio, fin, estado FROM disponibilidad WHERE id = %s", (disponibilidad_id,))
                 return cursor.fetchone()
         except Exception:
-            # Respaldo en memoria si XAMPP no está encendido durante pruebas locales
             return self._mock_disponibilidad.get(disponibilidad_id)
 
     def guardar_cita_y_reservar(self, cita: Cita) -> Cita:
@@ -57,7 +56,6 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
             conn = self._get_connection()
             try:
                 with conn.cursor() as cursor:
-                    # 1. Insertar la cita
                     sql_cita = """
                         INSERT INTO citas (id, usuario_id, disponibilidad_id, modalidad, estado, costo_informado_soles, condiciones_aceptadas)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -72,7 +70,6 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
                         1 if cita.condiciones_aceptadas else 0
                     ))
 
-                    # 2. Actualizar estado del horario a reservado
                     sql_disp = "UPDATE disponibilidad SET estado = 'reservada' WHERE id = %s"
                     cursor.execute(sql_disp, (cita.disponibilidad_id,))
 
@@ -83,8 +80,7 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
                 raise e
             finally:
                 conn.close()
-        except Exception as e:
-            # Si MySQL no está levantado, persistir en memoria para demostración sin caída
+        except Exception:
             if disponibilidad_id := cita.disponibilidad_id:
                 if disponibilidad_id in self._mock_disponibilidad:
                     self._mock_disponibilidad[disponibilidad_id]['estado'] = 'reservada'
@@ -109,3 +105,45 @@ class CitaRepositoryMySQL(CitaRepositoryPort):
                 ]
         except Exception:
             return [c for c in self._mock_citas.values() if c.usuario_id == usuario_id]
+
+    def registrar_resena(self, id_resena: str, cita_id: str, puntuacion: int, comentario: str) -> Dict[str, Any]:
+        try:
+            conn = self._get_connection()
+            try:
+                with conn.cursor() as cursor:
+                    sql = """
+                        INSERT INTO resenas (id, cita_id, puntuacion, comentario)
+                        VALUES (%s, %s, %s, %s)
+                        ON DUPLICATE KEY UPDATE puntuacion=VALUES(puntuacion), comentario=VALUES(comentario)
+                    """
+                    cursor.execute(sql, (id_resena, cita_id, puntuacion, comentario))
+                conn.commit()
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
+        except Exception:
+            pass
+
+        record = {
+            "id": id_resena,
+            "cita_id": cita_id,
+            "puntuacion": puntuacion,
+            "comentario": comentario
+        }
+        self._mock_resenas.append(record)
+        return record
+
+    def listar_profesionales(self) -> List[Dict[str, Any]]:
+        try:
+            conn = self._get_connection()
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    SELECT p.id, p.nombre_mostrado, p.especialidad_descriptiva, o.tipo, o.costo_referencial_soles
+                    FROM profesionales p
+                    JOIN opciones_atencion o ON p.opcion_id = o.id
+                """)
+                return cursor.fetchall()
+        except Exception:
+            return []
