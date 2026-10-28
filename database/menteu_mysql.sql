@@ -100,7 +100,8 @@ INSERT INTO opciones_atencion (id, nombre, tipo, modalidad, descripcion, costo_r
 INSERT INTO profesionales (id, opcion_id, nombre_mostrado, especialidad_descriptiva) VALUES
 ('prof-01', 'opt-01', 'Bienestar Universitario (Lic. Carlos Ruiz)', 'Ansiedad académica y gestión del tiempo'),
 ('prof-02', 'opt-02', 'Psic. Ana Torres', 'Manejo de estrés, sobrecarga y hábitos de estudio'),
-('prof-03', 'opt-02', 'Psic. Luis Mendoza', 'Orientación vocacional y equilibrio emocional');
+('prof-03', 'opt-02', 'Psic. Luis Mendoza', 'Orientación vocacional y equilibrio emocional'),
+('prof-04', 'opt-02', 'Psic. Carla Rojas', 'Gestión emocional y apoyo en situaciones complejas');
 
 INSERT INTO disponibilidad (id, profesional_id, inicio, fin, estado) VALUES
 ('disp-01', 'prof-01', '2026-10-22 10:00:00', '2026-10-22 10:45:00', 'libre'),

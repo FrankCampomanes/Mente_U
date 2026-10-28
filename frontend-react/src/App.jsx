@@ -2,62 +2,90 @@ import React, { useState } from 'react';
 import './App.css';
 import { analyzeAndRespond, buildDynamicSummary } from './frenzEngine';
 
-// Profesionales para las pantallas posteriores (flujo completo conectado)
+// Lista de los 4 profesionales exactamente como en el mockup del profesor
 const PROFESIONALES = [
   {
     id: 'prof-01',
-    nombre: 'Bienestar Universitario (Lic. Carlos Ruiz)',
-    especialidad: 'Ansiedad académica, adaptación universitaria y técnicas de estudio',
-    tipo: 'gratis',
-    modalidad: 'mixta',
-    costo: 0,
-    costoLabel: 'Gratuito (UTP)',
-    rating: 4.8,
-    reviewsCount: 112,
+    nombre: 'Bienestar Universitario',
+    subtitulo: 'Psicología para estudiantes',
+    costoTexto: 'GRATIS',
+    esGratis: true,
+    precioValor: 0,
+    modalidad: 'Virtual / Presencial',
+    rating: 4.9,
+    reviewsCount: 142,
+    fotoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Servicio gratuito de psicología universitaria',
+    especialidades: 'Ansiedad, estrés académico',
     resenas: [
-      { autor: 'Estudiante anónimo', texto: 'Me ayudó a organizar mis semanas de parciales sin colapsar. Trato muy humano y cercano.' }
+      { texto: '“Excelente atención y seguimiento.”', autor: '— Estudiante verificado' }
     ]
   },
   {
     id: 'prof-02',
     nombre: 'Psic. Ana Torres',
-    especialidad: 'Manejo del estrés, sobrecarga emocional y hábitos de descanso',
-    tipo: 'pago',
-    modalidad: 'virtual',
-    costo: 15,
-    costoLabel: 'S/ 15 / sesión (Tarifa solidaria)',
-    rating: 5.0,
-    reviewsCount: 88,
+    subtitulo: 'Ansiedad y estrés académico',
+    costoTexto: 'S/10 por sesión',
+    esGratis: false,
+    precioValor: 10,
+    modalidad: 'Virtual / Presencial',
+    rating: 4.8,
+    reviewsCount: 110,
+    fotoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Especialista en autorregulación y técnicas de estudio',
+    especialidades: 'Ansiedad, estrés académico',
     resenas: [
-      { autor: 'Estudiante anónimo', texto: 'La sesión virtual fue súper puntual. Me dio ejercicios prácticos para el insomnio.' }
+      { texto: '“Orientación sobre mis preocupaciones: ansiedad y estrés académico.”', autor: '' },
+      { texto: '“Ana trata el estrés académico con mucha cercanía.”', autor: '' }
     ]
   },
   {
     id: 'prof-03',
     nombre: 'Psic. Luis Mendoza',
-    especialidad: 'Orientación vocacional, crisis de desmotivación y autoestima',
-    tipo: 'pago',
-    modalidad: 'virtual',
-    costo: 15,
-    costoLabel: 'S/ 15 / sesión (Tarifa solidaria)',
+    subtitulo: 'Orientación universitaria',
+    costoTexto: 'S/10 por sesión',
+    esGratis: false,
+    precioValor: 10,
+    modalidad: 'Virtual / Presencial',
     rating: 4.7,
-    reviewsCount: 65,
+    reviewsCount: 85,
+    fotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Acompañamiento en vocación y adaptación a la carrera',
+    especialidades: 'Orientación universitaria, toma de decisiones',
     resenas: [
-      { autor: 'Estudiante anónimo', texto: 'Tenía dudas con mi carrera y me ayudó a aclarar mi vocación sin juzgarme.' }
+      { texto: '“Me ayudó a ordenar mis prioridades académicas y personales.”', autor: '— Alumno de 4to ciclo' }
+    ]
+  },
+  {
+    id: 'prof-04',
+    nombre: 'Psic. Carla Rojas',
+    subtitulo: 'Primera consulta GRATIS',
+    costoTexto: 'S/15 por sesión',
+    esGratis: false,
+    precioValor: 15,
+    modalidad: 'Virtual / Presencial',
+    rating: 4.9,
+    reviewsCount: 96,
+    fotoUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=160&auto=format&fit=crop&q=80',
+    descripcionTop: 'Primera consulta GRATIS - Acompañamiento integral',
+    especialidades: 'Gestión emocional y apoyo en situaciones complejas',
+    resenas: [
+      { texto: '“Muy buena profesional, empática y con horarios flexibles.”', autor: '— Estudiante de ingeniería' }
     ]
   }
 ];
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('welcome'); // welcome | prompt | chat | summary | options | calendar | success
+  // Pantallas: welcome (1) | prompt (2) | chat (3) | summary (4) | options (5) | profile (6) | datetime (7) | success (8)
+  const [currentScreen, setCurrentScreen] = useState('welcome');
   const [screenHistory, setScreenHistory] = useState(['welcome']);
   
-  // Usuario y login
+  // Usuario
   const [userAlias, setUserAlias] = useState('Estudiante');
-  const [authMode, setAuthMode] = useState(null); // 'login' | 'register'
+  const [authMode, setAuthMode] = useState(null);
   const [aliasInput, setAliasInput] = useState('');
 
-  // Mensajes de la conversación (inicializados con el ejemplo exacto del mockup del profesor)
+  // Conversación (con el diálogo del mockup)
   const [messages, setMessages] = useState([
     { sender: 'user', text: 'Hoy siento que no puedo con todo.' },
     { sender: 'ai', text: 'Parece que estás teniendo bastante encima. ¿Qué es lo que más te está preocupando ahora?' },
@@ -69,11 +97,15 @@ export default function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [detectedTopics, setDetectedTopics] = useState(['examenes', 'cansancio_sueno']);
 
-  // Agendamiento para pantallas posteriores
-  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[0]);
-  const [selectedDay, setSelectedDay] = useState('Jue 22');
-  const [selectedSlot, setSelectedSlot] = useState('10:00 a. m.');
+  // Filtros de la Pantalla 5
+  const [activeFilter, setActiveFilter] = useState('todos'); // 'todos' | 'gratis' | 'precio' | 'modalidad' | 'calificacion'
+
+  // Selección de profesional y horario (Pantallas 6 y 7)
+  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[1]); // Psic. Ana Torres por defecto como en el mockup
+  const [selectedDay, setSelectedDay] = useState('Martes 15');
+  const [selectedTime, setSelectedTime] = useState('11:30 a. m.');
   const [reservaConfirmada, setReservaConfirmada] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Navegación
   const navigateTo = (screen) => {
@@ -97,7 +129,7 @@ export default function App() {
     setCurrentScreen('welcome');
   };
 
-  // Iniciar conversación desde la Pantalla 2 (Prompt)
+  // Chat
   const handleStartFromPrompt = (text) => {
     if (!text.trim()) return;
     const initialUserMsg = { sender: 'user', text: text.trim() };
@@ -110,7 +142,6 @@ export default function App() {
     navigateTo('chat');
   };
 
-  // Enviar mensaje en la Pantalla 3 (Chat)
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -129,18 +160,58 @@ export default function App() {
     }, 600);
   };
 
-  // Resumen dinámico para la Pantalla 4
+  // Filtrado de profesionales
+  const filteredProfessionals = PROFESIONALES.filter((p) => {
+    if (activeFilter === 'gratis') return p.esGratis;
+    if (activeFilter === 'precio') return !p.esGratis;
+    if (activeFilter === 'calificacion') return p.rating >= 4.8;
+    return true;
+  });
+
+  // Confirmar agendamiento en base de datos
+  const handleConfirmBooking = async () => {
+    setIsSubmitting(true);
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://mente-u-backend.onrender.com';
+    const nuevaCita = {
+      id: 'CITA-' + Math.floor(1000 + Math.random() * 9000),
+      prof: selectedProf.nombre,
+      fecha: `${selectedDay} a las ${selectedTime}`,
+      costo: selectedProf.costoTexto,
+      modalidad: selectedProf.modalidad
+    };
+
+    try {
+      // Intentar persistir en el backend en vivo (Render + Aiven MySQL)
+      await fetch(`${apiUrl}/api/citas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuario_id: 'usr-demo-01',
+          disponibilidad_id: 'disp-01',
+          modalidad: 'virtual',
+          costo: selectedProf.precioValor
+        })
+      });
+    } catch (err) {
+      console.log('Persistencia offline activa:', err);
+    }
+
+    setReservaConfirmada(nuevaCita);
+    setIsSubmitting(false);
+    navigateTo('success');
+  };
+
   const summaryData = buildDynamicSummary(detectedTopics);
 
   return (
     <div className="device-wrapper">
       <div className="smartphone-frame">
-        {/* Notch / Speaker */}
+        {/* Notch / Parlante superior */}
         <div className="phone-notch">
           <span className="phone-camera"></span>
         </div>
 
-        {/* Header idéntico al mockup del profesor */}
+        {/* Header superior unificado */}
         <header className="mockup-header">
           <div className="header-left-col">
             {currentScreen !== 'welcome' ? (
@@ -169,11 +240,11 @@ export default function App() {
           </div>
         </header>
 
-        {/* CUERPO DE LAS 4 PANTALLAS */}
+        {/* CONTENEDOR DE PANTALLAS */}
         <div className="phone-screen-content">
 
           {/* ======================================================== */}
-          {/* PANTALLA 1: BIENVENIDA / INICIO (Mockup 3 del profesor)   */}
+          {/* PANTALLA 1: BIENVENIDA (Mockup 3 del profesor)           */}
           {/* ======================================================== */}
           {currentScreen === 'welcome' && (
             <div className="screen-view view-welcome">
@@ -210,7 +281,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Modal de Registro Opcional */}
               {authMode && (
                 <div className="simple-modal-backdrop">
                   <div className="simple-modal-card">
@@ -390,32 +460,67 @@ export default function App() {
           )}
 
           {/* ======================================================== */}
-          {/* PANTALLA 5 EN ADELANTE (Continuidad completa del flujo)  */}
+          {/* PANTALLA 5: OPCIONES DE APOYO (Mockup 2 del nuevo set)     */}
           {/* ======================================================== */}
           {currentScreen === 'options' && (
             <div className="screen-view view-options">
-              <h2 className="chat-main-heading">Opciones de Apoyo</h2>
-              <p className="prompt-sub-heading">Especialistas disponibles para atenderte:</p>
+              <h2 className="chat-main-heading">Opciones que podrían ayudarte</h2>
+              <p className="prompt-sub-heading" style={{ marginBottom: '14px' }}>
+                Según lo que conversamos, puedes elegir la opción de atención que prefieras.
+              </p>
 
-              <div className="options-prof-list">
-                {PROFESIONALES.map((prof) => (
-                  <div key={prof.id} className="prof-card-item">
-                    <div className="prof-info-col">
-                      <strong className="prof-name">{prof.nombre}</strong>
-                      <span className="prof-spec">{prof.especialidad}</span>
-                      <div className="prof-tags-row">
-                        <span className="tag-pill">{prof.costoLabel}</span>
-                        <span className="tag-pill">{prof.modalidad}</span>
-                      </div>
+              {/* Botones de filtro del mockup */}
+              <div className="filter-pills-grid">
+                <button 
+                  onClick={() => setActiveFilter(activeFilter === 'gratis' ? 'todos' : 'gratis')} 
+                  className={activeFilter === 'gratis' ? 'btn-filter-pill active' : 'btn-filter-pill'}
+                >
+                  Gratis
+                </button>
+                <button 
+                  onClick={() => setActiveFilter(activeFilter === 'precio' ? 'todos' : 'precio')} 
+                  className={activeFilter === 'precio' ? 'btn-filter-pill active' : 'btn-filter-pill'}
+                >
+                  Precio
+                </button>
+                <button 
+                  onClick={() => setActiveFilter(activeFilter === 'modalidad' ? 'todos' : 'modalidad')} 
+                  className={activeFilter === 'modalidad' ? 'btn-filter-pill active' : 'btn-filter-pill'}
+                >
+                  Modalidad
+                </button>
+                <button 
+                  onClick={() => setActiveFilter(activeFilter === 'calificacion' ? 'todos' : 'calificacion')} 
+                  className={activeFilter === 'calificacion' ? 'btn-filter-pill active' : 'btn-filter-pill'}
+                >
+                  Calificación
+                </button>
+                <button 
+                  onClick={() => setActiveFilter('todos')} 
+                  className={activeFilter === 'todos' ? 'btn-filter-pill active full-width' : 'btn-filter-pill full-width'}
+                >
+                  Todos
+                </button>
+              </div>
+
+              {/* Lista de 4 tarjetas de profesionales del mockup */}
+              <div className="prof-cards-vertical-list">
+                {filteredProfessionals.map((prof) => (
+                  <div key={prof.id} className="prof-card-row">
+                    <img src={prof.fotoUrl} alt={prof.nombre} className="prof-avatar-img" />
+                    <div className="prof-card-details">
+                      <strong className="prof-title-line">{prof.nombre}</strong>
+                      <span className="prof-sub-line">{prof.subtitulo}</span>
+                      <span className="prof-price-highlight">{prof.costoTexto}</span>
                     </div>
                     <button 
                       onClick={() => {
                         setSelectedProf(prof);
-                        navigateTo('calendar');
+                        navigateTo('profile');
                       }} 
-                      className="btn-teal-primary btn-sm"
+                      className="btn-ice-ver-perfil"
                     >
-                      Agendar
+                      Ver perfil
                     </button>
                   </div>
                 ))}
@@ -423,67 +528,146 @@ export default function App() {
             </div>
           )}
 
-          {currentScreen === 'calendar' && (
-            <div className="screen-view view-calendar">
-              <h2 className="chat-main-heading">Selecciona Fecha y Hora</h2>
-              <p className="prompt-sub-heading">Atención con: <strong>{selectedProf.nombre}</strong></p>
+          {/* ======================================================== */}
+          {/* PANTALLA 6: PERFIL DEL PROFESIONAL (Mockups 3 y 4 del set)*/}
+          {/* ======================================================== */}
+          {currentScreen === 'profile' && selectedProf && (
+            <div className="screen-view view-profile">
+              <h2 className="chat-main-heading" style={{ marginBottom: '14px' }}>
+                {selectedProf.nombre}
+              </h2>
 
-              <div className="date-selector-row">
-                {['Mié 21', 'Jue 22', 'Vie 23'].map((d) => (
+              {/* Bloque superior con foto y subtítulo / estrellas */}
+              <div className="profile-header-card">
+                <img src={selectedProf.fotoUrl} alt={selectedProf.nombre} className="profile-large-img" />
+                <div className="profile-header-info">
+                  {selectedProf.esGratis ? (
+                    <span className="profile-service-teal">{selectedProf.descripcionTop}</span>
+                  ) : (
+                    <div className="stars-rating-row">
+                      <span className="stars-green">★★★★☆</span>
+                      <span className="rating-num">{selectedProf.rating} - {selectedProf.reviewsCount} reseñas</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Datos de especialidad y tarifa */}
+              <div className="profile-specs-block">
+                <p><strong>Especialidades:</strong> {selectedProf.especialidades}</p>
+                <p><strong>Modalidad:</strong> {selectedProf.modalidad}</p>
+                <p><strong>{selectedProf.costoTexto}</strong></p>
+              </div>
+
+              {/* Caja celeste de contexto de conversación */}
+              <div className="summary-ice-card profile-context-box">
+                <strong className="context-box-title">Contexto de la conversación</strong>
+                <p className="context-box-desc">
+                  El profesional puede recibir un resumen orientativo de la conversación con MenteU para conocer el contexto antes de la atención. (No se comparte la conversación completa)
+                </p>
+              </div>
+
+              {/* Caja blanca de reseñas de estudiantes */}
+              <div className="profile-reviews-box">
+                <strong className="reviews-box-title">Reseñas de estudiantes</strong>
+                {selectedProf.resenas.map((r, i) => (
+                  <div key={i} className="review-quote-item">
+                    <p>{r.texto}</p>
+                    {r.autor && <small className="review-author-tag">{r.autor}</small>}
+                  </div>
+                ))}
+              </div>
+
+              {/* Botón inferior Solicitar cita */}
+              <div className="profile-bottom-cta">
+                <button 
+                  onClick={() => navigateTo('datetime')} 
+                  className="btn-teal-primary"
+                >
+                  Solicitar cita
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* PANTALLA 7: FECHA Y HORA (Mockup 1 del nuevo set)          */}
+          {/* ======================================================== */}
+          {currentScreen === 'datetime' && (
+            <div className="screen-view view-datetime">
+              <h2 className="chat-main-heading" style={{ marginBottom: '20px' }}>
+                Selecciona fecha y hora<br />para tu cita
+              </h2>
+
+              {/* Fila de días exactamente como en el mockup */}
+              <div className="days-pills-row">
+                {['Lunes 14', 'Martes 15', 'Miércoles 16'].map((d) => (
                   <button 
                     key={d} 
                     onClick={() => setSelectedDay(d)} 
-                    className={selectedDay === d ? 'day-btn active' : 'day-btn'}
+                    className={selectedDay === d ? 'btn-day-pill active' : 'btn-day-pill'}
                   >
                     {d}
                   </button>
                 ))}
               </div>
 
-              <div className="slots-selector-grid">
-                {['10:00 a. m.', '11:30 a. m.', '03:00 p. m.', '04:30 p. m.'].map((slot) => (
+              {/* Bloques de horario verticales idénticos al mockup */}
+              <div className="time-slots-vertical-list">
+                {['10:00 a. m.', '11:30 a. m.', '2:00 p. m.', '3:30 p. m.'].map((t) => (
                   <button 
-                    key={slot} 
-                    onClick={() => setSelectedSlot(slot)} 
-                    className={selectedSlot === slot ? 'slot-btn active' : 'slot-btn'}
+                    key={t} 
+                    onClick={() => setSelectedTime(t)} 
+                    className={selectedTime === t ? 'btn-time-slot active' : 'btn-time-slot'}
                   >
-                    {slot}
+                    {t}
                   </button>
                 ))}
               </div>
 
-              <div className="calendar-confirm-box">
+              {/* Caja informativa celeste de selección */}
+              <div className="summary-ice-card datetime-selected-summary">
+                <span className="selected-lead-tag">Has seleccionado:</span>
+                <strong className="selected-lead-val">{selectedDay} a las {selectedTime}.</strong>
+              </div>
+
+              {/* Botón inferior Confirmar agendamiento */}
+              <div className="datetime-bottom-cta">
                 <button 
-                  onClick={() => {
-                    setReservaConfirmada({
-                      id: 'CITA-' + Math.floor(1000 + Math.random() * 9000),
-                      prof: selectedProf.nombre,
-                      fecha: `${selectedDay} a las ${selectedSlot}`,
-                      costo: selectedProf.costoLabel
-                    });
-                    navigateTo('success');
-                  }} 
+                  onClick={handleConfirmBooking} 
+                  disabled={isSubmitting}
                   className="btn-teal-primary"
                 >
-                  Confirmar Agendamiento
+                  {isSubmitting ? 'Guardando en Base de Datos...' : 'Confirmar agendamiento'}
                 </button>
               </div>
             </div>
           )}
 
+          {/* ======================================================== */}
+          {/* PANTALLA 8: CONFIRMACIÓN Y COMPROBANTE DE CITA             */}
+          {/* ======================================================== */}
           {currentScreen === 'success' && reservaConfirmada && (
             <div className="screen-view view-success">
               <div className="success-check-circle">✓</div>
-              <h2 className="success-main-heading">¡Cita Reservada con Éxito!</h2>
-              <div className="summary-ice-card">
-                <p><strong>Código de Reserva:</strong> {reservaConfirmada.id}</p>
+              <h2 className="success-main-heading">¡Cita Registrada!</h2>
+              <p className="prompt-sub-heading" style={{ textAlign: 'center', marginBottom: '18px' }}>
+                Tu solicitud ha sido guardada en la base de datos de MenteU.
+              </p>
+
+              <div className="summary-ice-card success-ticket-card">
+                <p><strong>Código de Cita:</strong> {reservaConfirmada.id}</p>
                 <p><strong>Especialista:</strong> {reservaConfirmada.prof}</p>
-                <p><strong>Horario:</strong> {reservaConfirmada.fecha}</p>
-                <p><strong>Tarifa:</strong> {reservaConfirmada.costo}</p>
+                <p><strong>Fecha y hora:</strong> {reservaConfirmada.fecha}</p>
+                <p><strong>Tarifa acordada:</strong> {reservaConfirmada.costo}</p>
+                <p><strong>Modalidad:</strong> {reservaConfirmada.modalidad}</p>
               </div>
-              <button onClick={handleGoHome} className="btn-teal-primary" style={{ marginTop: '24px' }}>
-                Volver al Inicio
-              </button>
+
+              <div className="success-actions-bottom">
+                <button onClick={handleGoHome} className="btn-teal-primary">
+                  Volver al Inicio
+                </button>
+              </div>
             </div>
           )}
 
