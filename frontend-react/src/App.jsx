@@ -2,88 +2,78 @@ import React, { useState } from 'react';
 import './App.css';
 import { analyzeAndRespond, buildDynamicSummary } from './frenzEngine';
 
+// Profesionales para las pantallas posteriores (flujo completo conectado)
 const PROFESIONALES = [
   {
     id: 'prof-01',
     nombre: 'Bienestar Universitario (Lic. Carlos Ruiz)',
-    especialidad: 'Psicología estudiantil, ansiedad ante exámenes y adaptación',
+    especialidad: 'Ansiedad académica, adaptación universitaria y técnicas de estudio',
     tipo: 'gratis',
     modalidad: 'mixta',
     costo: 0,
-    costoLabel: 'GRATIS',
-    rating: 4.9,
-    reviewsCount: 142,
+    costoLabel: 'Gratuito (UTP)',
+    rating: 4.8,
+    reviewsCount: 112,
     resenas: [
-      { autor: 'Estudiante de 4to ciclo', texto: 'Excelente atención. Me ayudó a organizar mis semanas de exámenes finales sin colapsar.' },
-      { autor: 'Estudiante anónimo', texto: 'Trato muy amable y comprensivo. Sentí que realmente me escucharon.' }
+      { autor: 'Estudiante anónimo', texto: 'Me ayudó a organizar mis semanas de parciales sin colapsar. Trato muy humano y cercano.' }
     ]
   },
   {
     id: 'prof-02',
     nombre: 'Psic. Ana Torres',
-    especialidad: 'Manejo del estrés académico, burnout y técnicas de relajación',
+    especialidad: 'Manejo del estrés, sobrecarga emocional y hábitos de descanso',
     tipo: 'pago',
     modalidad: 'virtual',
     costo: 15,
-    costoLabel: 'S/ 15 / sesión',
-    rating: 4.8,
-    reviewsCount: 110,
+    costoLabel: 'S/ 15 / sesión (Tarifa solidaria)',
+    rating: 5.0,
+    reviewsCount: 88,
     resenas: [
-      { autor: 'Estudiante de Ingeniería', texto: 'Explicaciones claras y un espacio muy seguro. La sesión de 45 minutos fue muy productiva.' },
-      { autor: 'Estudiante anónimo', texto: 'Tarifa súper accesible para universitarios. Me dio pautas prácticas desde el primer día.' }
+      { autor: 'Estudiante anónimo', texto: 'La sesión virtual fue súper puntual. Me dio ejercicios prácticos para el insomnio.' }
     ]
   },
   {
     id: 'prof-03',
     nombre: 'Psic. Luis Mendoza',
-    especialidad: 'Orientación vocacional, motivación y equilibrio personal',
+    especialidad: 'Orientación vocacional, crisis de desmotivación y autoestima',
     tipo: 'pago',
     modalidad: 'virtual',
-    costo: 10,
-    costoLabel: 'S/ 10 / sesión',
-    rating: 4.7,
-    reviewsCount: 85,
-    resenas: [
-      { autor: 'Estudiante de Ciencias', texto: 'Muy empático. Me ayudó a replantear mis metas sin sentir tanta presión familiar.' }
-    ]
-  },
-  {
-    id: 'prof-04',
-    nombre: 'Psic. Carla Rojas',
-    especialidad: 'Gestión emocional y apoyo en situaciones personales complejas',
-    tipo: 'pago',
-    modalidad: 'presencial',
     costo: 15,
-    costoLabel: 'S/ 15 / sesión',
-    rating: 4.9,
-    reviewsCount: 94,
+    costoLabel: 'S/ 15 / sesión (Tarifa solidaria)',
+    rating: 4.7,
+    reviewsCount: 65,
     resenas: [
-      { autor: 'Estudiante anónimo', texto: 'Atención presencial impecable. Da mucha tranquilidad poder hablar cara a cara.' }
+      { autor: 'Estudiante anónimo', texto: 'Tenía dudas con mi carrera y me ayudó a aclarar mi vocación sin juzgarme.' }
     ]
   }
 ];
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('welcome');
+  const [currentScreen, setCurrentScreen] = useState('welcome'); // welcome | prompt | chat | summary | options | calendar | success
   const [screenHistory, setScreenHistory] = useState(['welcome']);
   
-  const [userAlias, setUserAlias] = useState('Anónimo #74');
-  const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
+  // Usuario y login
+  const [userAlias, setUserAlias] = useState('Estudiante');
+  const [authMode, setAuthMode] = useState(null); // 'login' | 'register'
   const [aliasInput, setAliasInput] = useState('');
 
-  // Estado del Chat
-  const [messages, setMessages] = useState([]);
+  // Mensajes de la conversación (inicializados con el ejemplo exacto del mockup del profesor)
+  const [messages, setMessages] = useState([
+    { sender: 'user', text: 'Hoy siento que no puedo con todo.' },
+    { sender: 'ai', text: 'Parece que estás teniendo bastante encima. ¿Qué es lo que más te está preocupando ahora?' },
+    { sender: 'user', text: 'La universidad. Tengo varios trabajos y una exposición.' },
+    { sender: 'ai', text: 'Entiendo. ¿Sientes que te preocupa no llegar a todo o hay algo más que te está afectando?' }
+  ]);
   const [chatInput, setChatInput] = useState('');
+  const [promptInput, setPromptInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [detectedTopics, setDetectedTopics] = useState([]);
+  const [detectedTopics, setDetectedTopics] = useState(['examenes', 'cansancio_sueno']);
 
-  // Estado del Filtro y Selección
-  const [filterCost, setFilterCost] = useState('all');
-  const [filterModality, setFilterModality] = useState('all');
-  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[1]);
+  // Agendamiento para pantallas posteriores
+  const [selectedProf, setSelectedProf] = useState(PROFESIONALES[0]);
   const [selectedDay, setSelectedDay] = useState('Jue 22');
-  const [selectedSlot, setSelectedSlot] = useState('11:30 a. m.');
-  const [consentGranted, setConsentGranted] = useState(true);
+  const [selectedSlot, setSelectedSlot] = useState('10:00 a. m.');
+  const [reservaConfirmada, setReservaConfirmada] = useState(null);
 
   // Navegación
   const navigateTo = (screen) => {
@@ -97,539 +87,408 @@ export default function App() {
       nextHistory.pop();
       setScreenHistory(nextHistory);
       setCurrentScreen(nextHistory[nextHistory.length - 1]);
+    } else {
+      setCurrentScreen('welcome');
     }
   };
 
-  // Chat con Frenz (Respuestas Inteligentes y Variadas)
-  const handleStartConversation = (promptText) => {
-    setMessages([{ sender: 'user', text: promptText }]);
-    const analysis = analyzeAndRespond(promptText, []);
-    setDetectedTopics(analysis.detectedTopicIds);
-    navigateTo('chat');
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: 'ai',
-          text: analysis.reply
-        }
-      ]);
-    }, 700);
+  const handleGoHome = () => {
+    setScreenHistory(['welcome']);
+    setCurrentScreen('welcome');
   };
 
-  const handleSendChatMessage = (e) => {
+  // Iniciar conversación desde la Pantalla 2 (Prompt)
+  const handleStartFromPrompt = (text) => {
+    if (!text.trim()) return;
+    const initialUserMsg = { sender: 'user', text: text.trim() };
+    const analysis = analyzeAndRespond(text.trim(), []);
+    setDetectedTopics(analysis.detectedTopicIds);
+    setMessages([
+      initialUserMsg,
+      { sender: 'ai', text: analysis.reply }
+    ]);
+    navigateTo('chat');
+  };
+
+  // Enviar mensaje en la Pantalla 3 (Chat)
+  const handleSendMessage = (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-
     const userText = chatInput.trim();
-    const currentMessages = [...messages, { sender: 'user', text: userText }];
-    setMessages(currentMessages);
+    const updatedMessages = [...messages, { sender: 'user', text: userText }];
+    setMessages(updatedMessages);
     setChatInput('');
     setIsTyping(true);
 
-    // Analizar mensaje con el motor empático
-    const analysis = analyzeAndRespond(userText, currentMessages);
+    const analysis = analyzeAndRespond(userText, updatedMessages);
     setDetectedTopics((prev) => [...prev, ...analysis.detectedTopicIds]);
 
     setTimeout(() => {
       setIsTyping(false);
       setMessages((prev) => [...prev, { sender: 'ai', text: analysis.reply }]);
-    }, 850);
+    }, 600);
   };
 
-
-  const filteredProfessionals = PROFESIONALES.filter((p) => {
-    if (filterCost === 'gratis' && p.tipo !== 'gratis') return false;
-    if (filterCost === 'pago' && p.tipo !== 'pago') return false;
-    if (filterModality === 'virtual' && p.modalidad === 'presencial') return false;
-    if (filterModality === 'presencial' && p.modalidad === 'virtual') return false;
-    return true;
-  });
+  // Resumen dinámico para la Pantalla 4
+  const summaryData = buildDynamicSummary(detectedTopics);
 
   return (
-    <>
-      <div className="ambient-glow ambient-glow-1"></div>
-      <div className="ambient-glow ambient-glow-2"></div>
-      <div className="ambient-glow ambient-glow-3"></div>
+    <div className="device-wrapper">
+      <div className="smartphone-frame">
+        {/* Notch / Speaker */}
+        <div className="phone-notch">
+          <span className="phone-camera"></span>
+        </div>
 
-      <main className="app-viewport">
-        {/* Barra Superior */}
-        <header className="app-header">
-          <div className="header-left">
-            {screenHistory.length > 1 && currentScreen !== 'welcome' && currentScreen !== 'success' && (
-              <button onClick={handleBack} className="icon-btn" aria-label="Volver">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        {/* Header idéntico al mockup del profesor */}
+        <header className="mockup-header">
+          <div className="header-left-col">
+            {currentScreen !== 'welcome' ? (
+              <button onClick={handleBack} className="btn-circle-back" aria-label="Volver">
+                &lt;
               </button>
+            ) : (
+              <div style={{ width: '32px' }}></div>
             )}
-            <div className="brand">
-              <span className="brand-dot-pulse"></span>
-              <span className="brand-title">Mente<span className="brand-accent">U</span></span>
-            </div>
           </div>
-          <div className="header-right">
-            <span className="badge-anon">
-              <span>{userAlias}</span>
-            </span>
+
+          <div className="header-center-logo">
+            <svg className="brain-logo-svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <rect x="2" y="2" width="20" height="20" rx="6" fill="#e6fffa" />
+              <path d="M8.5 7A2 2 0 0 1 11 9v6a2 2 0 0 1-4 .4 2 2 0 0 1-2-2.5 2.5 2.5 0 0 1 0-4.5A2 2 0 0 1 8.5 7z" stroke="#0d9488" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15.5 7A2 2 0 0 0 13 9v6a2 2 0 0 0 4 .4 2 2 0 0 0 2-2.5 2.5 2.5 0 0 0 0-4.5A2 2 0 0 0 15.5 7z" stroke="#0d9488" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M17 18l3-3M20 15h-2.5M20 15v2.5" stroke="#0d9488" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span className="brand-title">Mente<span className="brand-accent">U</span></span>
+          </div>
+
+          <div className="header-right-col">
+            <button onClick={handleGoHome} className="btn-pill-home">
+              Inicio
+            </button>
           </div>
         </header>
 
-        {/* PANTALLA 1: Bienvenida */}
-        {currentScreen === 'welcome' && (
-          <div className="screen-container">
-            <div className="welcome-hero">
-              <div className="hero-avatar-box">
-                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-              </div>
-              <h1 className="hero-title">Un espacio para ti</h1>
-              <p className="hero-subtitle">Habla de lo que sientes en la universidad, a tu ritmo y con total confidencialidad.</p>
-              
-              <div className="privacy-badge">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>Privado &bull; No guardamos tus mensajes</span>
-              </div>
-            </div>
+        {/* CUERPO DE LAS 4 PANTALLAS */}
+        <div className="phone-screen-content">
 
-            <div className="welcome-actions">
-              <button onClick={() => setAuthMode('login')} className="btn btn-primary btn-block">
-                <span>Iniciar sesión</span>
-              </button>
-              <button onClick={() => setAuthMode('register')} className="btn btn-secondary btn-block">
-                <span>Registrarme</span>
-              </button>
-              <button 
-                onClick={() => {
-                  setUserAlias('Anónimo #74');
-                  navigateTo('prompt');
-                }} 
-                className="btn btn-ghost btn-sm"
-                style={{ marginTop: '4px' }}
-              >
-                <span>Continuar como invitado anónimo</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
-            <p className="footnote">Para estudiantes universitarios de todo el Perú</p>
-
-            {/* Modal de Autenticación / Registro (Wireframe 01) */}
-            {authMode && (
-              <div className="modal-backdrop">
-                <div className="modal-box">
-                  <div className="modal-header">
-                    <h3>{authMode === 'login' ? 'Iniciar Sesión' : 'Registro de Estudiante'}</h3>
-                    <button onClick={() => setAuthMode(null)} className="icon-btn">&times;</button>
+          {/* ======================================================== */}
+          {/* PANTALLA 1: BIENVENIDA / INICIO (Mockup 3 del profesor)   */}
+          {/* ======================================================== */}
+          {currentScreen === 'welcome' && (
+            <div className="screen-view view-welcome">
+              <div className="welcome-center-box">
+                <div className="welcome-logo-badge">
+                  <div className="badge-brain-box">
+                    <svg viewBox="0 0 24 24" width="46" height="46" fill="none">
+                      <rect x="1" y="1" width="22" height="22" rx="7" fill="#e6fffa" />
+                      <path d="M8.5 6.5A2.2 2.2 0 0 1 11 8.8v6.4a2 2 0 0 1-4 .4 2 2 0 0 1-2-2.5 2.5 2.5 0 0 1 0-4.5A2.2 2.2 0 0 1 8.5 6.5z" stroke="#0d9488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M15.5 6.5A2.2 2.2 0 0 0 13 8.8v6.4a2 2 0 0 0 4 .4 2 2 0 0 0 2-2.5 2.5 2.5 0 0 0 0-4.5A2.2 2.2 0 0 0 15.5 6.5z" stroke="#0d9488" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M17 18l3.5-3.5M20.5 14.5H17.5M20.5 14.5V17.5" stroke="#0d9488" strokeWidth="1.7" strokeLinecap="round"/>
+                    </svg>
                   </div>
-                  <p className="modal-sub">
-                    {authMode === 'login' 
-                      ? 'Ingresa con tu alias para acceder a tus citas programadas.' 
-                      : 'Elige un alias anónimo para proteger tu identidad.'}
-                  </p>
-                  <form onSubmit={(e) => {
-                    e.preventDefault();
-                    if (aliasInput.trim()) {
-                      setUserAlias(aliasInput.trim());
-                    }
-                    setAuthMode(null);
-                    navigateTo('prompt');
-                  }}>
-                    <div className="modal-input-group">
-                      <label>Alias universitario:</label>
-                      <input 
-                        type="text" 
-                        placeholder="Ej. Estudiante_Lince, SanMarcos_21, etc." 
-                        value={aliasInput}
-                        onChange={(e) => setAliasInput(e.target.value)}
-                        required
-                      />
+                  <span className="brand-welcome-text">Mente<span className="brand-welcome-accent">U</span></span>
+                </div>
+
+                <h1 className="welcome-tagline">
+                  Tu espacio para hablar<br />cuando lo necesites.
+                </h1>
+              </div>
+
+              <div className="welcome-bottom-actions">
+                <button 
+                  onClick={() => navigateTo('prompt')} 
+                  className="btn-teal-primary"
+                >
+                  Iniciar sesión
+                </button>
+                <button 
+                  onClick={() => setAuthMode('register')} 
+                  className="btn-ice-secondary"
+                >
+                  Registrarme
+                </button>
+              </div>
+
+              {/* Modal de Registro Opcional */}
+              {authMode && (
+                <div className="simple-modal-backdrop">
+                  <div className="simple-modal-card">
+                    <h3>Crear cuenta de estudiante</h3>
+                    <p>Elige un alias anónimo para identificarte:</p>
+                    <input 
+                      type="text" 
+                      placeholder="Ej. Estudiante_21" 
+                      value={aliasInput}
+                      onChange={(e) => setAliasInput(e.target.value)}
+                      className="modal-text-input"
+                    />
+                    <div className="modal-btns-row">
+                      <button onClick={() => setAuthMode(null)} className="btn-cancel-modal">Cancelar</button>
+                      <button onClick={() => {
+                        if (aliasInput.trim()) setUserAlias(aliasInput.trim());
+                        setAuthMode(null);
+                        navigateTo('prompt');
+                      }} className="btn-teal-primary btn-sm">Aceptar</button>
                     </div>
-                    {authMode === 'register' && (
-                      <div className="modal-input-group">
-                        <label>Universidad (Opcional):</label>
-                        <input type="text" placeholder="Ej. UTP, UNMSM, PUCP, UNI..." />
-                      </div>
-                    )}
-                    <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '14px' }}>
-                      <span>{authMode === 'login' ? 'Entrar a MenteU' : 'Crear mi cuenta'}</span>
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-
-        {/* PANTALLA 2: Prompts Rápidos */}
-        {currentScreen === 'prompt' && (
-          <div className="screen-container">
-            <div className="prompt-header">
-              <div className="avatar-frenz">F</div>
-              <h2>Hola, soy Frenz</h2>
-              <p>Elige de qué te gustaría hablar o cuéntame directo:</p>
-            </div>
-
-            <div className="quick-cards-grid">
-              <button onClick={() => handleStartConversation('Quiero desahogarme un poco, siento que se me juntaron varias cosas.')} className="quick-card">
-                <div className="card-icon-pill">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                </div>
-                <div>
-                  <strong>Quiero desahogarme</strong>
-                  <small>Expresar lo que tengo acumulado</small>
-                </div>
-              </button>
-
-              <button onClick={() => handleStartConversation('Tuve un día pesado con los cursos y tareas.')} className="quick-card">
-                <div className="card-icon-pill">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div>
-                  <strong>Tuve un día difícil</strong>
-                  <small>Cansancio o sobrecarga de tareas</small>
-                </div>
-              </button>
-
-              <button onClick={() => handleStartConversation('Me preocupa bastante mi rendimiento y las semanas de evaluaciones.')} className="quick-card">
-                <div className="card-icon-pill">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                </div>
-                <div>
-                  <strong>Me preocupa el ciclo</strong>
-                  <small>Exámenes y evaluaciones próximas</small>
-                </div>
-              </button>
-
-              <button onClick={() => handleStartConversation('Solo quiero hablar con alguien para despejar la cabeza.')} className="quick-card">
-                <div className="card-icon-pill">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
-                </div>
-                <div>
-                  <strong>Solo charlar un rato</strong>
-                  <small>Pausar y ordenar pensamientos</small>
-                </div>
-              </button>
-            </div>
-
-            <div className="input-box-light">
-              <input 
-                type="text" 
-                placeholder="O escribe libremente aquí..."
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    handleStartConversation(e.target.value.trim());
-                  }
-                }}
-              />
-              <button className="btn-send" aria-label="Enviar">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-              </button>
-            </div>
-            <p className="disclaimer-soft">Espacio de apoyo inicial &bull; No sustituye atención médica</p>
-          </div>
-        )}
-
-        {/* PANTALLA 3: Chat Interactivo */}
-        {currentScreen === 'chat' && (
-          <div className="screen-container">
-            <div className="chat-status-bar">
-              <div className="frenz-identity">
-                <div className="frenz-avatar-mini">F</div>
-                <div>
-                  <strong>Frenz</strong>
-                  <span className="frenz-status">En línea contigo</span>
-                </div>
-              </div>
-              <button onClick={() => navigateTo('summary')} className="btn btn-sm btn-ghost">
-                <span>Ver resumen</span>
-              </button>
-            </div>
-
-            <div className="chat-flow">
-              {messages.map((m, idx) => (
-                <div key={idx} className={`msg-wrapper ${m.sender}`}>
-                  <span className="msg-author">{m.sender === 'user' ? 'Tú' : 'Frenz'}</span>
-                  <div className="msg-bubble">{m.text}</div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="msg-wrapper ai">
-                  <span className="msg-author">Frenz</span>
-                  <div className="msg-bubble" style={{ display: 'flex', gap: '4px', padding: '12px 16px' }}>
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
                   </div>
                 </div>
               )}
             </div>
+          )}
 
-            <form onSubmit={handleSendChatMessage} className="input-box-light" style={{ padding: '4px 6px 4px 16px' }}>
-              <input
-                type="text"
-                placeholder="Escribe lo que sientes..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-              />
-              <button type="submit" className="btn-send" aria-label="Enviar">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-              </button>
-            </form>
-          </div>
-        )}
+          {/* ======================================================== */}
+          {/* PANTALLA 2: PROMPT INICIAL (Mockup 4 del profesor)        */}
+          {/* ======================================================== */}
+          {currentScreen === 'prompt' && (
+            <div className="screen-view view-prompt">
+              <div className="prompt-header-texts">
+                <h2 className="prompt-main-heading">Hola, ¿cómo estás hoy?</h2>
+                <p className="prompt-sub-heading">Puedes comenzar por aquí:</p>
+              </div>
 
-        {/* PANTALLA 4: Resumen Orientativo */}
-        {currentScreen === 'summary' && (() => {
-          const summaryData = buildDynamicSummary(detectedTopics);
-          return (
-            <div className="screen-container">
-              <div className="summary-card">
-                <span className="summary-badge">Puntos clave</span>
-                <h2 className="summary-title">Gracias por compartir esto con Frenz</h2>
-                <p className="summary-intro">De lo que charlamos, esto es lo principal que identificamos:</p>
+              <div className="prompt-pills-list">
+                <button onClick={() => handleStartFromPrompt('Quiero contar cómo me siento')} className="btn-prompt-pill">
+                  Quiero contar cómo me siento
+                </button>
+                <button onClick={() => handleStartFromPrompt('Tuve un día difícil')} className="btn-prompt-pill">
+                  Tuve un día difícil
+                </button>
+                <button onClick={() => handleStartFromPrompt('Me preocupa algo')} className="btn-prompt-pill">
+                  Me preocupa algo
+                </button>
+                <button onClick={() => handleStartFromPrompt('Solo quiero conversar')} className="btn-prompt-pill">
+                  Solo quiero conversar
+                </button>
+              </div>
 
-                <ul className="summary-points">
-                  {summaryData.points.map((p, idx) => (
-                    <li key={idx}>{p}</li>
-                  ))}
-                </ul>
-
-                <div className="tips-box">
-                  <span className="tips-label">Pasos suaves para hoy:</span>
-                  <ol className="tips-list">
-                    {summaryData.tips.map((t, idx) => (
-                      <li key={idx}>{t}</li>
-                    ))}
-                  </ol>
+              <div className="prompt-bottom-input-zone">
+                <p className="prompt-write-anyway-text">También puedes escribir lo que quieras.</p>
+                <div className="input-bar-mockup">
+                  <input 
+                    type="text" 
+                    placeholder="Escribe cómo te sientes..."
+                    value={promptInput}
+                    onChange={(e) => setPromptInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleStartFromPrompt(promptInput);
+                    }}
+                    className="input-field-clean"
+                  />
+                  <button 
+                    onClick={() => handleStartFromPrompt(promptInput)} 
+                    className="btn-teal-square-send" 
+                    aria-label="Enviar"
+                  >
+                    &gt;
+                  </button>
                 </div>
+              </div>
+            </div>
+          )}
 
-                <div className="consent-check">
-                  <label className="custom-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={consentGranted}
-                      onChange={(e) => setConsentGranted(e.target.checked)}
-                    />
-                    <span className="label-text">Autorizo ver las opciones de apoyo y compartir este resumen únicamente si elijo agendar una cita.</span>
-                  </label>
-                </div>
+          {/* ======================================================== */}
+          {/* PANTALLA 3: CONVERSACIÓN CON IA (Mockup 2 del profesor)    */}
+          {/* ======================================================== */}
+          {currentScreen === 'chat' && (
+            <div className="screen-view view-chat">
+              <div className="chat-title-row">
+                <h2 className="chat-main-heading">Conversación con IA</h2>
+              </div>
 
-                <button
-                  onClick={() => {
-                    if (!consentGranted) {
-                      alert('Por favor autoriza la opción de ver apoyos para continuar.');
-                      return;
-                    }
-                    navigateTo('options');
-                  }}
-                  className="btn btn-primary btn-block"
+              <div className="chat-messages-container">
+                {messages.map((msg, index) => (
+                  <div 
+                    key={index} 
+                    className={msg.sender === 'user' ? 'bubble-user-full' : 'bubble-ai-white'}
+                  >
+                    <p>{msg.text}</p>
+                  </div>
+                ))}
+                {isTyping && (
+                  <div className="bubble-ai-white typing-indicator-bubble">
+                    <span className="typing-dot"></span>
+                    <span className="typing-dot"></span>
+                    <span className="typing-dot"></span>
+                  </div>
+                )}
+              </div>
+
+              <div className="chat-bottom-dock">
+                <form onSubmit={handleSendMessage} className="input-bar-mockup">
+                  <input 
+                    type="text" 
+                    placeholder="Escribe un mensaje..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    className="input-field-clean"
+                  />
+                  <button type="submit" className="btn-teal-square-send" aria-label="Enviar">
+                    &gt;
+                  </button>
+                </form>
+
+                <button 
+                  onClick={() => navigateTo('summary')} 
+                  className="btn-teal-primary btn-close-convo"
                 >
-                  <span>Ver opciones de atención</span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  Cerrar conversación
                 </button>
               </div>
             </div>
-          );
-        })()}
+          )}
 
+          {/* ======================================================== */}
+          {/* PANTALLA 4: RESUMEN DE CONVERSACIÓN (Mockup 1 del profesor)*/}
+          {/* ======================================================== */}
+          {currentScreen === 'summary' && (
+            <div className="screen-view view-summary">
+              <h2 className="summary-title-heading">
+                Gracias por compartir conmigo. No estás solo.
+              </h2>
 
-        {/* PANTALLA 5: Opciones y Filtros */}
-        {currentScreen === 'options' && (
-          <div className="screen-container">
-            <div className="options-header">
-              <h2>Especialistas disponibles</h2>
-              <p>Puedes elegir entre el servicio gratuito universitario o psicólogos colegiados particulares.</p>
-            </div>
+              <p className="summary-section-lead">
+                De nuestra conversación, parece que estás lidiando con:
+              </p>
 
-            <div className="filters-bar">
-              <div className="filter-group">
-                <label>Costo:</label>
-                <div className="pill-selector">
-                  <button className={`pill ${filterCost === 'all' ? 'active' : ''}`} onClick={() => setFilterCost('all')}>Todos</button>
-                  <button className={`pill ${filterCost === 'gratis' ? 'active' : ''}`} onClick={() => setFilterCost('gratis')}>Gratis</button>
-                  <button className={`pill ${filterCost === 'pago' ? 'active' : ''}`} onClick={() => setFilterCost('pago')}>Solidario</button>
-                </div>
+              <div className="summary-ice-card">
+                <ul className="summary-bullets-list">
+                  {summaryData.points.map((pt, i) => (
+                    <li key={i}>{pt}</li>
+                  ))}
+                </ul>
               </div>
-              <div className="filter-group">
-                <label>Modalidad:</label>
-                <div className="pill-selector">
-                  <button className={`pill ${filterModality === 'all' ? 'active' : ''}`} onClick={() => setFilterModality('all')}>Todas</button>
-                  <button className={`pill ${filterModality === 'virtual' ? 'active' : ''}`} onClick={() => setFilterModality('virtual')}>Virtual</button>
-                  <button className={`pill ${filterModality === 'presencial' ? 'active' : ''}`} onClick={() => setFilterModality('presencial')}>Presencial</button>
-                </div>
-              </div>
-            </div>
 
-            <div className="professionals-list">
-              {filteredProfessionals.map((prof) => (
-                <div
-                  key={prof.id}
-                  className="prof-card"
-                  onClick={() => {
-                    setSelectedProf(prof);
-                    navigateTo('detail');
-                  }}
+              <div className="summary-advice-block">
+                <p className="summary-advice-lead">
+                  <strong>¡Ánimo! Lo importante es que ya estás buscando ayuda. Aquí tienes unos consejos:</strong>
+                </p>
+                <ol className="summary-numbered-tips">
+                  {summaryData.tips.map((tip, i) => (
+                    <li key={i}>{i + 1}. {tip}</li>
+                  ))}
+                </ol>
+              </div>
+
+              <p className="summary-disclaimer-text">
+                Estas observaciones son un resumen de nuestra charla y no son un diagnóstico médico.
+              </p>
+
+              <p className="summary-referral-prompt">
+                Si quieres, exploremos juntos opciones para encontrar el apoyo que necesitas para superar este momento.
+              </p>
+
+              <div className="summary-action-bottom">
+                <button 
+                  onClick={() => navigateTo('options')} 
+                  className="btn-teal-primary"
                 >
-                  <div className="prof-card-top">
-                    <h3>{prof.nombre}</h3>
-                    <span className={prof.tipo === 'gratis' ? 'badge-gratis' : 'badge-pago'}>
-                      {prof.tipo === 'gratis' ? 'Gratis' : 'S/ 15'}
-                    </span>
-                  </div>
-                  <p className="prof-specialty">{prof.especialidad}</p>
-                  <div className="prof-meta-row">
-                    <div className="prof-rating">
-                      ★ {prof.rating} <small>({prof.reviewsCount} opiniones)</small>
-                    </div>
-                    <div className="prof-cost">{prof.costoLabel}</div>
-                  </div>
-                </div>
-              ))}
+                  Ver opciones de apoyo
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* PANTALLA 6/7: Detalle del Profesional */}
-        {currentScreen === 'detail' && selectedProf && (
-          <div className="screen-container">
-            <div className="detail-card">
-              <div className="detail-header-hero">
-                <div className="detail-avatar-box">{selectedProf.nombre.charAt(0)}</div>
-                <h2>{selectedProf.nombre}</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{selectedProf.especialidad}</p>
-                <div className="detail-price-big">{selectedProf.costoLabel}</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-soft)', marginTop: '4px' }}>
-                  {selectedProf.modalidad === 'mixta' ? 'Virtual o Presencial' : `Modalidad ${selectedProf.modalidad}`} &bull; Sesión de 45-50 min
-                </div>
-              </div>
+          {/* ======================================================== */}
+          {/* PANTALLA 5 EN ADELANTE (Continuidad completa del flujo)  */}
+          {/* ======================================================== */}
+          {currentScreen === 'options' && (
+            <div className="screen-view view-options">
+              <h2 className="chat-main-heading">Opciones de Apoyo</h2>
+              <p className="prompt-sub-heading">Especialistas disponibles para atenderte:</p>
 
-              <div className="detail-box-privacy">
-                <strong>Privacidad asegurada</strong>
-                <p>El profesional solo verá el resumen orientativo si tú autorizas compartirlo. Tus chats no se guardan.</p>
-              </div>
-
-              <div className="reviews-preview-box">
-                <h4>Opiniones de otros estudiantes:</h4>
-                {selectedProf.resenas.map((r, i) => (
-                  <div key={i} className="review-item">
-                    "{r.texto}"
-                    <span className="review-author">— {r.autor}</span>
+              <div className="options-prof-list">
+                {PROFESIONALES.map((prof) => (
+                  <div key={prof.id} className="prof-card-item">
+                    <div className="prof-info-col">
+                      <strong className="prof-name">{prof.nombre}</strong>
+                      <span className="prof-spec">{prof.especialidad}</span>
+                      <div className="prof-tags-row">
+                        <span className="tag-pill">{prof.costoLabel}</span>
+                        <span className="tag-pill">{prof.modalidad}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setSelectedProf(prof);
+                        navigateTo('calendar');
+                      }} 
+                      className="btn-teal-primary btn-sm"
+                    >
+                      Agendar
+                    </button>
                   </div>
                 ))}
               </div>
+            </div>
+          )}
 
-              <button onClick={() => navigateTo('schedule')} className="btn btn-primary btn-block">
-                <span>Elegir fecha y horario</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          {currentScreen === 'calendar' && (
+            <div className="screen-view view-calendar">
+              <h2 className="chat-main-heading">Selecciona Fecha y Hora</h2>
+              <p className="prompt-sub-heading">Atención con: <strong>{selectedProf.nombre}</strong></p>
+
+              <div className="date-selector-row">
+                {['Mié 21', 'Jue 22', 'Vie 23'].map((d) => (
+                  <button 
+                    key={d} 
+                    onClick={() => setSelectedDay(d)} 
+                    className={selectedDay === d ? 'day-btn active' : 'day-btn'}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+
+              <div className="slots-selector-grid">
+                {['10:00 a. m.', '11:30 a. m.', '03:00 p. m.', '04:30 p. m.'].map((slot) => (
+                  <button 
+                    key={slot} 
+                    onClick={() => setSelectedSlot(slot)} 
+                    className={selectedSlot === slot ? 'slot-btn active' : 'slot-btn'}
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+
+              <div className="calendar-confirm-box">
+                <button 
+                  onClick={() => {
+                    setReservaConfirmada({
+                      id: 'CITA-' + Math.floor(1000 + Math.random() * 9000),
+                      prof: selectedProf.nombre,
+                      fecha: `${selectedDay} a las ${selectedSlot}`,
+                      costo: selectedProf.costoLabel
+                    });
+                    navigateTo('success');
+                  }} 
+                  className="btn-teal-primary"
+                >
+                  Confirmar Agendamiento
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentScreen === 'success' && reservaConfirmada && (
+            <div className="screen-view view-success">
+              <div className="success-check-circle">✓</div>
+              <h2 className="success-main-heading">¡Cita Reservada con Éxito!</h2>
+              <div className="summary-ice-card">
+                <p><strong>Código de Reserva:</strong> {reservaConfirmada.id}</p>
+                <p><strong>Especialista:</strong> {reservaConfirmada.prof}</p>
+                <p><strong>Horario:</strong> {reservaConfirmada.fecha}</p>
+                <p><strong>Tarifa:</strong> {reservaConfirmada.costo}</p>
+              </div>
+              <button onClick={handleGoHome} className="btn-teal-primary" style={{ marginTop: '24px' }}>
+                Volver al Inicio
               </button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* PANTALLA 8: Selección de Horario */}
-        {currentScreen === 'schedule' && selectedProf && (
-          <div className="screen-container">
-            <div className="schedule-header">
-              <h2>Elige tu horario</h2>
-              <p>Sesiones de 45 a 50 minutos con atención personalizada.</p>
-            </div>
-
-            <div className="prof-summary-badge">
-              Atención con: <strong>{selectedProf.nombre}</strong> ({selectedProf.costoLabel})
-            </div>
-
-            <div className="days-carousel">
-              {['Jue 22', 'Vie 23', 'Sáb 24', 'Lun 26'].map((d) => (
-                <button
-                  key={d}
-                  className={`day-card ${selectedDay === d ? 'active' : ''}`}
-                  onClick={() => setSelectedDay(d)}
-                >
-                  <span className="day-name">{d.split(' ')[0]}</span>
-                  <span className="day-num">{d.split(' ')[1]}</span>
-                  <span className="day-status">{d === 'Jue 22' ? 'Hoy' : 'Libre'}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="slots-grid">
-              {['10:00 a. m.', '11:30 a. m.', '03:00 p. m.', '04:30 p. m.'].map((slot) => (
-                <button
-                  key={slot}
-                  className={`slot-btn ${selectedSlot === slot ? 'active' : ''}`}
-                  onClick={() => setSelectedSlot(slot)}
-                >
-                  {slot}
-                </button>
-              ))}
-            </div>
-
-            <div className="selection-preview-box">
-              <span className="preview-label">Has elegido:</span>
-              <strong>{selectedDay}, {selectedSlot} ({selectedProf.modalidad === 'presencial' ? 'Presencial' : 'Virtual'})</strong>
-            </div>
-
-            <button onClick={() => navigateTo('success')} className="btn btn-primary btn-block">
-              <span>Confirmar Cita</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-        )}
-
-        {/* PANTALLA 12: Confirmación */}
-        {currentScreen === 'success' && selectedProf && (
-          <div className="screen-container">
-            <div className="success-card">
-              <div className="success-icon-wrapper">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <h2>Cita confirmada</h2>
-              <p className="success-subtitle">Tu espacio ha quedado reservado en MenteU.</p>
-
-              <div className="ticket-card">
-                <div className="ticket-row">
-                  <span className="ticket-label">Especialista:</span>
-                  <strong>{selectedProf.nombre}</strong>
-                </div>
-                <div className="ticket-row">
-                  <span className="ticket-label">Horario:</span>
-                  <strong>{selectedDay}, {selectedSlot}</strong>
-                </div>
-                <div className="ticket-row">
-                  <span className="ticket-label">Modalidad:</span>
-                  <span>{selectedProf.modalidad === 'presencial' ? 'Presencial' : 'Virtual (Meet)'}</span>
-                </div>
-                <div className="ticket-row">
-                  <span className="ticket-label">Costo:</span>
-                  <strong className="cost-tag">{selectedProf.costo === 0 ? 'GRATIS' : `S/ ${selectedProf.costo}.00`}</strong>
-                </div>
-                <div className="ticket-row">
-                  <span className="ticket-label">Estado:</span>
-                  <span className="status-solicitada">CONFIRMADA</span>
-                </div>
-              </div>
-
-              <div className="review-lock-box">
-                <div className="stars-row disabled">
-                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-                </div>
-                <small className="lock-note">
-                  La opción de dejar una reseña se activa después de realizar la sesión.
-                </small>
-              </div>
-
-              <button onClick={() => navigateTo('welcome')} className="btn btn-secondary btn-block">
-                <span>Volver al inicio</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </main>
-    </>
+        </div>
+      </div>
+    </div>
   );
 }
